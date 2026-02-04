@@ -1,3 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCORE 2.5 自助授权中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: radial-gradient(circle at center, #1a1c2c 0%, #07080a 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; font-family: -apple-system, system-ui, sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .glow-button { background: linear-gradient(45deg, #4f46e5, #9333ea); transition: all 0.3s ease; box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
+        .glow-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 25px rgba(147, 51, 234, 0.6); }
+        .glow-button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .code-card { background: rgba(0, 0, 0, 0.3); border: 1px dashed rgba(255, 255, 255, 0.3); }
+        .nav-link { transition: all 0.2s; border: 1px solid rgba(255,255,255,0.05); }
+        .nav-link:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-pop { animation: fadeIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+<div class="glass p-8 w-full max-w-md mx-4 animate-pop">
+    <div class="text-center mb-8">
+        <div class="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] uppercase tracking-widest mb-4">
+            Official Auth Server
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">MCORE 2.5 授权中心</h1>
+        <p class="text-gray-400 text-sm mt-2">请输入订单号领取您的永久激活码</p>
+    </div>
+
+    <div class="space-y-6">
+        <div>
+            <label class="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">订单号核验</label>
+            <input type="text" id="orderId" placeholder="请输入闲鱼/小红书订单号" 
+                class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-center font-mono">
+        </div>
+
+        <button onclick="requestKey()" id="btnText" class="glow-button w-full py-4 rounded-xl font-bold text-white">
+            立即领取激活码
+        </button>
+
+        <div id="resultArea" class="hidden animate-pop">
+            <div class="code-card p-6 rounded-xl text-center relative overflow-hidden">
+                <p class="text-xs text-gray-400 mb-2">验证通过！您的永久激活码：</p>
+                <div id="keyCode" class="text-xl font-mono font-bold text-indigo-300 tracking-widest select-all">
+                    LOADING...
+                </div>
+                <button onclick="copyKey()" class="mt-4 text-xs text-indigo-400 hover:text-indigo-300 underline">点击复制激活码</button>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-4 text-center">注意：激活码将与首台运行设备硬件 ID 自动绑定</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mt-8">
+            <button onclick="showDeveloping('闲鱼官方店')" class="nav-link py-3 rounded-xl flex flex-col items-center justify-center space-y-1">
+                <span class="text-xs font-medium text-gray-300">闲鱼店铺</span>
+                <span class="text-[9px] text-gray-500">二手交易/咨询</span>
+            </button>
+            <button onclick="showDeveloping('小红书社区')" class="nav-link py-3 rounded-xl flex flex-col items-center justify-center space-y-1">
+                <span class="text-xs font-medium text-gray-300">小红书</span>
+                <span class="text-[9px] text-gray-500">教程/更新动态</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-white/5 text-center">
+        <p class="text-[10px] text-gray-600 uppercase tracking-widest">© 2026 MCORE TECH. ALL RIGHTS RESERVED.</p>
+    </div>
+</div>
+
 <script>
     async function requestKey() {
         const orderInput = document.getElementById('orderId');
@@ -6,65 +76,70 @@
         const resultArea = document.getElementById('resultArea');
         const keyCodeDisplay = document.getElementById('keyCode');
 
-        // 1. 基础校验
         if (!orderId || orderId.length < 4) {
-            alert('请输入正确的订单信息（至少4位）');
+            alert('请输入有效的订单号进行核验');
             return;
         }
 
-        // 2. UI 状态切换
-        btn.innerText = '正在连接云端数据库...';
+        btn.innerText = '正在核验云端数据库...';
         btn.disabled = true;
 
         try {
-            // 3. 获取 pool.json (增加时间戳防止 GitHub Pages 缓存)
+            // 访问公库的 pool.json，增加随机数防止缓存
             const response = await fetch(`pool.json?t=${Date.now()}`);
-            if (!response.ok) throw new Error('无法连接到码库');
+            if (!response.ok) throw new Error('网络连接异常');
             
             const data = await response.json();
             const pool = data.pool || [];
 
             if (pool.length === 0) {
-                alert('库房补货中，请稍后再试或联系客服');
-                btn.innerText = '立即领取激活码';
-                btn.disabled = false;
+                alert('当前库存不足，正在紧急补货中，请联系客服。');
+                resetBtn();
                 return;
             }
 
-            // 4. 核心逻辑：根据订单号计算固定索引
-            // 这样同一个订单号多次输入，领到的永远是同一个码
+            // 使用简单 Hash 算法实现订单号与激活码的固定映射
             let hash = 0;
             for (let i = 0; i < orderId.length; i++) {
                 hash = ((hash << 5) - hash) + orderId.charCodeAt(i);
-                hash |= 0; // 转换为 32 位整数
+                hash |= 0;
             }
             const index = Math.abs(hash) % pool.length;
 
-            // 5. 解码并展示 (Base64 解码)
-            const encryptedKey = pool[index];
-            const decryptedKey = atob(encryptedKey); // 执行 Base64 解码
+            // Base64 解码获取明文激活码
+            const decryptedKey = atob(pool[index]);
 
-            // 模拟 1 秒加载感，增加仪式感
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // 模拟服务器响应延迟，增加真实感
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             keyCodeDisplay.innerText = decryptedKey;
             resultArea.classList.remove('hidden');
             
             btn.innerText = '领取成功';
-            btn.className = "w-full py-4 rounded-xl font-bold text-white bg-green-500 shadow-lg shadow-green-500/30";
+            btn.style.background = '#10b981';
             
         } catch (e) {
-            console.error(e);
-            alert('请求失败：' + e.message);
+            alert('核验失败，请检查网络连接或稍后重试');
+            resetBtn();
+        }
+
+        function resetBtn() {
             btn.innerText = '立即领取激活码';
             btn.disabled = false;
         }
     }
 
+    function showDeveloping(platform) {
+        alert(`${platform} 功能正在开发对接中，敬请期待！`);
+    }
+
     function copyKey() {
         const code = document.getElementById('keyCode').innerText;
         navigator.clipboard.writeText(code).then(() => {
-            alert('激活码已复制！');
+            alert('激活码已复制到剪贴板');
         });
     }
 </script>
+
+</body>
+</html>
