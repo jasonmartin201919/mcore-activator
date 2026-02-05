@@ -8,34 +8,34 @@
     <style>
         :root { --bg: #0f172a; }
         .admin-mode { --bg: #1a150e; }
-        body { background-color: var(--bg); transition: all 0.6s ease; color: white; font-family: "Inter", sans-serif; }
+        body { background-color: var(--bg); transition: all 0.6s ease; color: white; font-family: system-ui; }
         .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
         .admin-mode .glass { background: rgba(45, 38, 25, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); }
         .gold-glow { color: #d4af37 !important; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 antialiased">
 
-<div id="mainContainer" class="glass p-10 md:p-16 rounded-[3rem] w-full max-w-md shadow-2xl transition-all duration-700">
-    <div class="text-center mb-12">
-        <h1 id="brand" class="text-4xl font-black italic tracking-tighter transition-all">MCORE</h1>
-        <p id="subTitle" class="text-zinc-500 text-xs font-bold tracking-[0.4em] mt-3 uppercase">数据授权中心</p>
+<div id="mainContainer" class="glass p-10 md:p-14 rounded-[3rem] w-full max-w-md shadow-2xl transition-all duration-700">
+    <div class="text-center mb-10">
+        <h1 id="brand" class="text-3xl font-black italic tracking-tighter transition-all">MCORE</h1>
+        <p id="subTitle" class="text-gray-400 text-sm font-bold tracking-widest mt-2 uppercase">数据授权中心</p>
     </div>
 
     <div class="space-y-6">
-        <input type="text" id="orderId" oninput="handleKey(this.value)" placeholder="请输入核验订单号" 
-            class="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all placeholder:text-zinc-700">
+        <input type="text" id="orderId" oninput="handleKey(this.value)" placeholder="请输入授权单号" 
+            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all placeholder:text-gray-600">
         
-        <button onclick="process()" id="actionBtn" class="w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl active:scale-95">
-            开始安全核验
+        <button onclick="process()" id="actionBtn" class="w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl hover:brightness-110 active:scale-[0.98]">
+            开始安全提取
         </button>
 
-        <div id="resultArea" class="hidden mt-8 p-6 bg-black/40 rounded-3xl border border-white/5 border-dashed text-center animate">
-            <p class="text-[9px] text-zinc-500 uppercase tracking-widest mb-3 italic">Verified Activation Key</p>
+        <div id="resultArea" class="hidden mt-8 p-6 bg-black/40 rounded-3xl border border-white/5 border-dashed text-center animate-up">
+            <p id="label" class="text-[9px] text-gray-500 uppercase tracking-widest mb-3 italic">Authorized Key</p>
             <div id="keyCode" class="text-xl font-mono font-bold break-all select-all tracking-wider text-indigo-400"></div>
-            <div id="status" class="mt-4 text-[9px] opacity-30 italic font-medium">数据已于云端加密同步</div>
+            <div id="status" class="mt-4 text-[9px] opacity-40 italic">数据已于云端实时同步</div>
         </div>
     </div>
 </div>
@@ -43,6 +43,7 @@
 <script>
     const SUPER_CODE = "940715";
 
+    // 实时监测输入，改变界面UI
     function handleKey(val) {
         const isSuper = val.trim() === SUPER_CODE;
         const btn = document.getElementById('actionBtn');
@@ -52,46 +53,62 @@
         if (isSuper) {
             document.body.classList.add('admin-mode');
             brand.classList.add('gold-glow');
-            sub.innerText = "超级权限管理模式";
-            sub.className = "text-[#d4af37] text-[10px] font-bold tracking-[0.2em] mt-3 uppercase";
-            btn.innerText = "提取授权激活码";
+            sub.innerText = "超级权限提取模式";
+            sub.className = "text-[#d4af37] text-sm font-bold tracking-widest mt-2 uppercase";
+            btn.innerText = "立即提取激活码";
             btn.className = "w-full py-4 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-[#1a150e] rounded-2xl font-black tracking-widest transition-all shadow-lg";
         } else {
             document.body.classList.remove('admin-mode');
             brand.classList.remove('gold-glow');
             sub.innerText = "数据授权中心";
-            sub.className = "text-zinc-500 text-xs font-bold tracking-[0.4em] mt-3 uppercase";
-            btn.innerText = "开始安全核验";
+            sub.className = "text-gray-400 text-sm font-bold tracking-widest mt-2 uppercase";
+            btn.innerText = "开始安全提取";
             btn.className = "w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl text-white";
         }
     }
 
     async function process() {
         const input = document.getElementById('orderId').value.trim();
+        const resArea = document.getElementById('resultArea');
         if(!input) return;
 
-        if (input === SUPER_CODE) {
-            const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            const rnd = (n) => Array.from({length: n}, () => charset[Math.floor(Math.random()*charset.length)]).join('');
-            const superKey = `MCORE-${rnd(4)}-${rnd(4)}`;
-            render(superKey, "text-[#d4af37]", "超级特权提取成功");
-            return;
-        }
-
         try {
+            // 统一从公库 pool.json 获取数据
             const res = await fetch(`pool.json?t=${Date.now()}`);
+            if (!res.ok) throw new Error("库文件不存在");
             const data = await res.json();
             const pool = data.pool || [];
-            let hash = 0; for (let i = 0; i < input.length; i++) { hash = ((hash << 5) - hash) + input.charCodeAt(i); }
-            const keyData = pool[Math.abs(hash) % pool.length];
-            render(keyData.code, "text-indigo-400", keyData.mid ? "此激活码已被占用" : "核验通过，请尽快激活");
-        } catch (e) { alert("网络同步异常，请检查单号或稍后再试"); }
+
+            if (input === SUPER_CODE) {
+                // 超级码模式：直接提取公库中的第一个可用激活码
+                if (pool.length > 0) {
+                    render(pool[0].code, "text-[#d4af37]", "超级特权：成功提取库存现码");
+                } else {
+                    render("暂无库存", "text-red-500", "请先在后台补货并推送至公库");
+                }
+            } else {
+                // 普通订单模式：基于订单号哈希提取
+                if (pool.length === 0) {
+                    render("库存不足", "text-red-500", "请联系管理员补货");
+                    return;
+                }
+                let hash = 0; 
+                for (let i = 0; i < input.length; i++) { 
+                    hash = ((hash << 5) - hash) + input.charCodeAt(i); 
+                }
+                const keyData = pool[Math.abs(hash) % pool.length];
+                render(keyData.code, "text-indigo-400", "核验成功：激活码已就绪");
+            }
+        } catch (e) { 
+            alert("同步异常，请确认 pool.json 已正确推送到公库"); 
+        }
     }
 
     function render(code, colorClass, statusTxt) {
         const resArea = document.getElementById('resultArea');
-        document.getElementById('keyCode').innerText = code;
-        document.getElementById('keyCode').className = `text-xl font-mono font-bold tracking-wider select-all ${colorClass}`;
+        const keyDisp = document.getElementById('keyCode');
+        keyDisp.innerText = code;
+        keyDisp.className = `text-xl font-mono font-bold tracking-wider select-all ${colorClass}`;
         document.getElementById('status').innerText = statusTxt;
         resArea.classList.remove('hidden');
     }
