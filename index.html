@@ -14,6 +14,7 @@
         .gold-glow { color: #d4af37 !important; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
         .animate-up { animation: slideUp 0.4s ease-out forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        input::placeholder { color: rgba(156, 163, 175, 0.5); font-size: 0.9rem; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 antialiased">
@@ -24,11 +25,20 @@
         <p id="subTitle" class="text-gray-400 text-sm font-bold tracking-widest mt-2 uppercase">数据授权中心</p>
     </div>
 
-    <div class="space-y-6">
-        <input type="text" id="orderId" oninput="handleKey(this.value)" placeholder="请输入授权单号" 
-            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all placeholder:text-gray-600">
+    <div class="space-y-4">
+        <input type="text" id="orderId" oninput="checkSuper(this.value)" placeholder="请输入授权订单号" 
+            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all">
         
-        <button onclick="process()" id="actionBtn" class="w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl hover:brightness-110 active:scale-[0.98]">
+        <div class="flex items-center gap-4 px-4">
+            <div class="h-[1px] flex-1 bg-white/5"></div>
+            <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">OR</span>
+            <div class="h-[1px] flex-1 bg-white/5"></div>
+        </div>
+
+        <input type="tel" id="phoneNum" oninput="checkSuper(this.value)" placeholder="请输入购买手机号" 
+            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all">
+        
+        <button onclick="process()" id="actionBtn" class="w-full mt-4 py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl hover:brightness-110 active:scale-[0.98]">
             开始安全提取
         </button>
 
@@ -43,9 +53,9 @@
 <script>
     const SUPER_CODE = "940715";
 
-    // 实时监测输入，改变界面UI
-    function handleKey(val) {
-        const isSuper = val.trim() === SUPER_CODE;
+    // 监测输入，切换超级模式
+    function checkSuper(val) {
+        const isSuper = (val.trim() === SUPER_CODE);
         const btn = document.getElementById('actionBtn');
         const brand = document.getElementById('brand');
         const sub = document.getElementById('subTitle');
@@ -55,52 +65,62 @@
             brand.classList.add('gold-glow');
             sub.innerText = "超级权限提取模式";
             sub.className = "text-[#d4af37] text-sm font-bold tracking-widest mt-2 uppercase";
-            btn.innerText = "立即提取激活码";
+            btn.innerText = "立即提取现存码";
             btn.className = "w-full py-4 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-[#1a150e] rounded-2xl font-black tracking-widest transition-all shadow-lg";
         } else {
-            document.body.classList.remove('admin-mode');
-            brand.classList.remove('gold-glow');
-            sub.innerText = "数据授权中心";
-            sub.className = "text-gray-400 text-sm font-bold tracking-widest mt-2 uppercase";
-            btn.innerText = "开始安全提取";
-            btn.className = "w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl text-white";
+            // 这里只有两个框都非超级码时才退回普通模式
+            const order = document.getElementById('orderId').value.trim();
+            const phone = document.getElementById('phoneNum').value.trim();
+            if(order !== SUPER_CODE && phone !== SUPER_CODE) {
+                document.body.classList.remove('admin-mode');
+                brand.classList.remove('gold-glow');
+                sub.innerText = "数据授权中心";
+                sub.className = "text-gray-400 text-sm font-bold tracking-widest mt-2 uppercase";
+                btn.innerText = "开始安全提取";
+                btn.className = "w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl text-white";
+            }
         }
     }
 
     async function process() {
-        const input = document.getElementById('orderId').value.trim();
-        const resArea = document.getElementById('resultArea');
-        if(!input) return;
+        const order = document.getElementById('orderId').value.trim();
+        const phone = document.getElementById('phoneNum').value.trim();
+        
+        // 核心逻辑：两个输入框有一个满足条件即可
+        const primaryInput = order || phone; 
+        if(!primaryInput) return;
 
         try {
-            // 统一从公库 pool.json 获取数据
             const res = await fetch(`pool.json?t=${Date.now()}`);
-            if (!res.ok) throw new Error("库文件不存在");
             const data = await res.json();
             const pool = data.pool || [];
 
-            if (input === SUPER_CODE) {
-                // 超级码模式：直接提取公库中的第一个可用激活码
+            // 1. 如果输入的是超级码
+            if (order === SUPER_CODE || phone === SUPER_CODE) {
                 if (pool.length > 0) {
-                    render(pool[0].code, "text-[#d4af37]", "超级特权：成功提取库存现码");
+                    render(pool[0].code, "text-[#d4af37]", "超级特权：已从公库提取首位库存");
                 } else {
-                    render("暂无库存", "text-red-500", "请先在后台补货并推送至公库");
+                    render("暂无库存", "text-red-500", "公库库存为空，请在后台补货并推送");
                 }
-            } else {
-                // 普通订单模式：基于订单号哈希提取
-                if (pool.length === 0) {
-                    render("库存不足", "text-red-500", "请联系管理员补货");
-                    return;
-                }
-                let hash = 0; 
-                for (let i = 0; i < input.length; i++) { 
-                    hash = ((hash << 5) - hash) + input.charCodeAt(i); 
-                }
-                const keyData = pool[Math.abs(hash) % pool.length];
-                render(keyData.code, "text-indigo-400", "核验成功：激活码已就绪");
+                return;
             }
+
+            // 2. 普通提取逻辑（基于输入的哈希值提取）
+            if (pool.length === 0) {
+                render("库存不足", "text-red-500", "当前无可用授权，请联系客服补货");
+                return;
+            }
+
+            // 哈希计算（不论输入手机号还是订单号，只要固定，拿到的码就固定）
+            let hash = 0; 
+            for (let i = 0; i < primaryInput.length; i++) { 
+                hash = ((hash << 5) - hash) + primaryInput.charCodeAt(i); 
+            }
+            const keyData = pool[Math.abs(hash) % pool.length];
+            render(keyData.code, "text-indigo-400", "提取成功：激活码已就绪");
+
         } catch (e) { 
-            alert("同步异常，请确认 pool.json 已正确推送到公库"); 
+            alert("同步异常，请确认网络连接及 pool.json 状态"); 
         }
     }
 
