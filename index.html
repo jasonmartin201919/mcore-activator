@@ -6,36 +6,36 @@
     <title>MCORE 授权中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg: #0f172a; --accent: #4f46e5; }
-        .admin-mode { --bg: #1a150e; --accent: #d4af37; }
-        body { background-color: var(--bg); transition: all 0.6s ease; color: white; }
+        :root { --bg: #0f172a; }
+        .admin-mode { --bg: #1a150e; }
+        body { background-color: var(--bg); transition: all 0.6s ease; color: white; font-family: "Inter", sans-serif; }
         .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
-        .admin-mode .glass { background: rgba(45, 38, 25, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        .gold-glow { text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); color: #d4af37 !  important; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-up { animation: slideUp 0.4s ease-out forwards; }
+        .admin-mode .glass { background: rgba(45, 38, 25, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); }
+        .gold-glow { color: #d4af37 !important; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate { animation: fadeIn 0.4s ease-out forwards; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 antialiased">
 
-<div id="mainContainer" class="glass p-8 md:p-12 rounded-[2.5rem] w-full max-w-md transition-all duration-700">
-    <div class="text-center mb-10">
-        <h1 id="brand" class="text-3xl font-black italic tracking-tighter transition-all">MCORE <span class="opacity-50 text-sm not-italic font-light ml-1">2.5</span></h1>
-        <p class="text-gray-500 text-[10px] uppercase tracking-[0.3em] mt-2">Authorization Station</p>
+<div id="mainContainer" class="glass p-10 md:p-16 rounded-[3rem] w-full max-w-md shadow-2xl transition-all duration-700">
+    <div class="text-center mb-12">
+        <h1 id="brand" class="text-4xl font-black italic tracking-tighter transition-all">MCORE</h1>
+        <p id="subTitle" class="text-zinc-500 text-xs font-bold tracking-[0.4em] mt-3 uppercase">数据授权中心</p>
     </div>
 
     <div class="space-y-6">
-        <input type="text" id="orderId" oninput="handleKey(this.value)" placeholder="请输入核验单号" 
-            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all">
+        <input type="text" id="orderId" oninput="handleKey(this.value)" placeholder="请输入核验订单号" 
+            class="w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all placeholder:text-zinc-700">
         
-        <button onclick="process()" id="actionBtn" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold tracking-widest transition-all shadow-xl">
+        <button onclick="process()" id="actionBtn" class="w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl active:scale-95">
             开始安全核验
         </button>
 
-        <div id="resultArea" class="hidden animate-up mt-8 p-6 bg-black/40 rounded-3xl border border-white/5 border-dashed text-center">
-            <p id="label" class="text-[9px] text-gray-500 uppercase tracking-widest mb-3 italic">Authorized Activation Key</p>
+        <div id="resultArea" class="hidden mt-8 p-6 bg-black/40 rounded-3xl border border-white/5 border-dashed text-center animate">
+            <p class="text-[9px] text-zinc-500 uppercase tracking-widest mb-3 italic">Verified Activation Key</p>
             <div id="keyCode" class="text-xl font-mono font-bold break-all select-all tracking-wider text-indigo-400"></div>
-            <div id="status" class="mt-4 text-[9px] opacity-40 italic">已连接云端加密数据库</div>
+            <div id="status" class="mt-4 text-[9px] opacity-30 italic font-medium">数据已于云端加密同步</div>
         </div>
     </div>
 </div>
@@ -47,17 +47,22 @@
         const isSuper = val.trim() === SUPER_CODE;
         const btn = document.getElementById('actionBtn');
         const brand = document.getElementById('brand');
+        const sub = document.getElementById('subTitle');
         
         if (isSuper) {
             document.body.classList.add('admin-mode');
             brand.classList.add('gold-glow');
-            btn.innerText = "提取超级授权";
+            sub.innerText = "超级权限管理模式";
+            sub.className = "text-[#d4af37] text-[10px] font-bold tracking-[0.2em] mt-3 uppercase";
+            btn.innerText = "提取授权激活码";
             btn.className = "w-full py-4 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-[#1a150e] rounded-2xl font-black tracking-widest transition-all shadow-lg";
         } else {
             document.body.classList.remove('admin-mode');
             brand.classList.remove('gold-glow');
+            sub.innerText = "数据授权中心";
+            sub.className = "text-zinc-500 text-xs font-bold tracking-[0.4em] mt-3 uppercase";
             btn.innerText = "开始安全核验";
-            btn.className = "w-full py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold tracking-widest transition-all shadow-xl text-white";
+            btn.className = "w-full py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl text-white";
         }
     }
 
@@ -65,35 +70,28 @@
         const input = document.getElementById('orderId').value.trim();
         if(!input) return;
 
-        // 超级码提取逻辑：直接生成普通格式码
         if (input === SUPER_CODE) {
             const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             const rnd = (n) => Array.from({length: n}, () => charset[Math.floor(Math.random()*charset.length)]).join('');
             const superKey = `MCORE-${rnd(4)}-${rnd(4)}`;
-            render(superKey, "text-[#d4af37]", "超级特权已激活");
+            render(superKey, "text-[#d4af37]", "超级特权提取成功");
             return;
         }
 
-        // 普通订单查询逻辑
         try {
             const res = await fetch(`pool.json?t=${Date.now()}`);
             const data = await res.json();
             const pool = data.pool || [];
-            
             let hash = 0; for (let i = 0; i < input.length; i++) { hash = ((hash << 5) - hash) + input.charCodeAt(i); }
             const keyData = pool[Math.abs(hash) % pool.length];
-            
-            render(keyData.code, "text-indigo-400", keyData.mid ? "该订单已绑定设备" : "激活码处于待领状态");
-        } catch (e) {
-            alert("同步异常，请检查订单号");
-        }
+            render(keyData.code, "text-indigo-400", keyData.mid ? "此激活码已被占用" : "核验通过，请尽快激活");
+        } catch (e) { alert("网络同步异常，请检查单号或稍后再试"); }
     }
 
     function render(code, colorClass, statusTxt) {
         const resArea = document.getElementById('resultArea');
-        const keyDisp = document.getElementById('keyCode');
-        keyDisp.innerText = code;
-        keyDisp.className = `text-xl font-mono font-bold tracking-wider select-all ${colorClass}`;
+        document.getElementById('keyCode').innerText = code;
+        document.getElementById('keyCode').className = `text-xl font-mono font-bold tracking-wider select-all ${colorClass}`;
         document.getElementById('status').innerText = statusTxt;
         resArea.classList.remove('hidden');
     }
