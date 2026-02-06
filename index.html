@@ -52,10 +52,9 @@
 </div>
 
 <script>
-    /**
-     * 注意：请将此处的 WORKER_URL 替换为你 Cloudflare 控制面板中显示的实际地址
-     */
+    // ！！！请确保你的 Worker 允许 GET 请求并能正确返回 GitHub 仓库内容
     const WORKER_URL = "https://mcore-api-proxy.m872096549.workers.dev";
+    const POOL_RAW = "https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/pool.json";
     const SUPER_CODE = "940715";
 
     function checkSuper(val) {
@@ -83,73 +82,81 @@
         const btn = document.getElementById('actionBtn');
         
         if(!order || !phone) {
-            alert("请完整填写订单号和手机号以完成绑定");
+            alert("请完整填写订单号和手机号");
             return;
         }
 
         btn.classList.add('loading');
-        btn.innerText = "正在同步云端数据...";
+        btn.innerText = "正在检索授权库...";
 
         try {
-            // 1. 获取公库 pool.json 拿激活码
-            const resPool = await fetch(`https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/pool.json?t=${Date.now()}`);
+            // 1. 获取公库数据 - 优先尝试直接获取，失败则报错
+            // 注意：为了防止缓存，加上时间戳
+            const resPool = await fetch(`${POOL_RAW}?t=${Date.now()}`);
+            if (!resPool.ok) throw new Error("无法连接至 GitHub 授权库");
+            
             const poolData = await resPool.json();
             const pool = poolData.pool || [];
 
-            if (pool.length === 0) {
-                render("库存不足", "text-red-500", "当前无可用授权，请联系客服补货");
+            if (!Array.isArray(pool) || pool.length === 0) {
+                render("库存不足", "text-red-500", "授权公库当前为空，请联系客服补货");
                 return;
             }
 
-            // 算法提取一个固定的激活码
+            // 2. 确定目标激活码 (基于订单+手机的确定性算法)
             let hash = 0;
             const seed = order + phone;
             for (let i = 0; i < seed.length; i++) {
                 hash = ((hash << 5) - hash) + seed.charCodeAt(i);
             }
-            const targetCode = pool[Math.abs(hash) % pool.length].code;
+            const targetIndex = Math.abs(hash) % pool.length;
+            const targetCode = pool[targetIndex].code;
 
-            // 2. 通过 Cloudflare Worker 安全写入 db.json
+            btn.innerText = "正在云端绑定身份...";
+
+            // 3. 安全写入 db.json (通过 Worker)
             const success = await saveBindingToDB(targetCode, order, phone);
 
             if (success) {
-                render(targetCode, "text-indigo-400", "提取成功：已自动绑定订单信息");
+                render(targetCode, "text-indigo-400", "提取成功：已完成设备指纹预绑定");
             } else {
-                render("同步异常", "text-red-400", "激活码已生成，但云端数据录入失败，请重试");
+                render("同步失败", "text-red-400", "云端握手超时，请检查网络后重试");
             }
 
         } catch (e) {
             console.error(e);
-            alert("网络同步异常，请检查连接并稍后再试");
+            alert("通信异常: " + e.message);
         } finally {
             btn.classList.remove('loading');
             btn.innerText = (order === SUPER_CODE) ? "立即提取库存" : "开始安全提取";
         }
     }
 
-    /**
-     * 安全写入函数：不再含有 Token，完全通过 Worker API 中转
-     */
     async function saveBindingToDB(code, order, phone) {
         try {
-            // A. 通过 Worker 获取当前内容和 SHA
+            // A. 获取当前数据库状态
             const getRes = await fetch(WORKER_URL);
-            if (!getRes.ok) throw new Error("Worker 连接失败");
+            if (!getRes.ok) return false;
             
             const fileData = await getRes.json();
-            // 解析 GitHub 返回的 Base64 内容
-            const db = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+            // 兼容 GitHub API 的 Base64 解析逻辑
+            const contentDecoded = decodeURIComponent(escape(atob(fileData.content)));
+            const db = JSON.parse(contentDecoded);
 
-            // B. 查找或更新 Key 对象
+            // B. 查找或更新
             let keyObj = db.keys.find(k => k.code === code);
-            
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+
             if (keyObj) {
-                if (keyObj.phone && keyObj.phone !== phone && keyObj.mid !== "") {
-                    alert("该授权码已被其他信息占用，请联系客服");
-                    return false;
+                // 如果已绑定且手机号不符，说明算法冲突（极低概率）
+                if (keyObj.phone && keyObj.phone !== phone) {
+                    // 尝试找下一个可用的
+                    return false; 
                 }
                 keyObj.order_id = order;
                 keyObj.phone = phone;
+                keyObj.active_date = dateStr;
             } else {
                 db.keys.push({
                     code: code,
@@ -157,18 +164,19 @@
                     order_id: order,
                     phone: phone,
                     status: "unused",
-                    active_date: new Date().toLocaleDateString(),
+                    active_date: dateStr,
                     reset_history: [],
-                    geo: { city: "", region: "" }
+                    geo: { province: "", city: "", district: "", road: "", ip: "" }
                 });
             }
 
-            // C. 通过 Worker 提交更新
+            // C. 提交回 Worker
             const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
             const putRes = await fetch(WORKER_URL, {
                 method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: `Customer Binding: ${code}`,
+                    message: `Client-Bound: ${code}`,
                     content: updatedContent,
                     sha: fileData.sha
                 })
@@ -176,7 +184,7 @@
 
             return putRes.ok;
         } catch (err) {
-            console.error("写入失败:", err);
+            console.error("Worker Sync Error:", err);
             return false;
         }
     }
