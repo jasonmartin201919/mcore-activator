@@ -52,7 +52,8 @@
 </div>
 
 <script>
-    const WORKER_URL = "https://mcore-api-proxy.m872096549.workers.dev";
+    // --- 配置区 ---
+    const WORKER_URL = "https://auth.maxus.work"; 
     const POOL_RAW = "https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/pool.json";
     const SUPER_CODE = "940715";
 
@@ -91,34 +92,34 @@
         try {
             // 1. 获取公库数据
             const resPool = await fetch(`${POOL_RAW}?t=${Date.now()}`);
-            if (!resPool.ok) throw new Error("无法连接至授权库");
+            if (!resPool.ok) throw new Error("无法连接至 GitHub 库");
             
             const poolData = await resPool.json();
             const pool = poolData.pool || [];
 
             if (pool.length === 0) {
-                render("库存不足", "text-red-500", "当前无可用授权，请联系客服");
+                render("库存不足", "text-red-500", "授权公库当前为空，请联系客服");
                 return;
             }
 
-            // 算法锁定 Code
+            // 确定目标激活码
             let hash = 0;
             const seed = order + phone;
             for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
             const targetCode = pool[Math.abs(hash) % pool.length].code;
 
-            // 2. 核心：通过 Worker 同步并记录当前访问者的动态地理位置
+            // 2. 绑定并记录动态地理位置
             const success = await saveBindingToDB(targetCode, order, phone);
 
             if (success) {
                 render(targetCode, "text-indigo-400", "提取成功：已自动绑定当前物理节点");
             } else {
-                render("同步失败", "text-red-400", "云端数据冲突或 Worker 异常");
+                render("同步失败", "text-red-400", "网络环境不稳定，请尝试切换流量重试");
             }
 
         } catch (e) {
             console.error(e);
-            alert("系统异常: " + e.message);
+            alert("同步异常: " + e.message);
         } finally {
             btn.classList.remove('loading');
             btn.innerText = (order === SUPER_CODE) ? "立即提取库存" : "开始安全提取";
@@ -127,20 +128,17 @@
 
     async function saveBindingToDB(code, order, phone) {
         try {
-            // A. 获取最新数据 (Worker 会在这里返回 visitorGeo)
+            // A. 从自定义域名 Worker 获取最新数据及访问者 IP/地理信息
             const getRes = await fetch(WORKER_URL);
-            if (!getRes.ok) return false;
+            if (!getRes.ok) throw new Error("Worker 响应失败");
             
             const data = await getRes.json();
             const db = JSON.parse(decodeURIComponent(escape(atob(data.content))));
             
-            // 拿到 Worker 实时识别的动态位置 (这是纠偏的关键)
+            // 获取由 Worker 识别的真实位置
             const vGeo = data.visitorGeo || {};
 
-            let keyObj = db.keys.find(k => k.code === code);
             const dateStr = new Date().toLocaleDateString();
-
-            // 构造动态地理位置对象 (不再写死！)
             const dynamicGeo = {
                 province: vGeo.province || "未知",
                 city: vGeo.city || "未知",
@@ -149,10 +147,11 @@
                 ip: vGeo.ip || "0.0.0.0"
             };
 
+            let keyObj = db.keys.find(k => k.code === code);
             if (keyObj) {
                 keyObj.order_id = order;
                 keyObj.phone = phone;
-                keyObj.geo = dynamicGeo; // 更新为当前提取人的位置
+                keyObj.geo = dynamicGeo; 
                 keyObj.active_date = dateStr;
             } else {
                 db.keys.push({
@@ -167,13 +166,13 @@
                 });
             }
 
-            // B. 提交加密后的数据回 Worker
+            // B. 提交回 Worker
             const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
             const putRes = await fetch(WORKER_URL, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: `Auto-Geo Sync: ${code}`,
+                    message: `Client-Bind: ${code}`,
                     content: updatedContent,
                     sha: data.sha
                 })
@@ -181,7 +180,7 @@
 
             return putRes.ok;
         } catch (err) {
-            console.error("Sync Error:", err);
+            console.error("Save Error:", err);
             return false;
         }
     }
