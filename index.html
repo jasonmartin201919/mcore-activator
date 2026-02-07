@@ -8,87 +8,88 @@
     <style>
         :root { --bg: #0f172a; }
         .admin-mode { --bg: #1a150e; }
-        body { background-color: var(--bg); transition: all 0.6s ease; color: white; font-family: system-ui; }
+        body { background-color: var(--bg); transition: all 0.6s ease; color: white; font-family: system-ui, -apple-system, sans-serif; }
         
-        /* 玻璃拟态容器 - 自适应屏幕 */
         .glass { 
             background: rgba(30, 41, 59, 0.4); 
-            backdrop-filter: blur(15px); 
-            border: 1px solid rgba(255,255,255,0.05); 
-            position: relative;
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255,255,255,0.08); 
         }
         .admin-mode .glass { background: rgba(45, 38, 25, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); }
         
-        /* 文字效果 */
-        .brand-text {
-            background: linear-gradient(to bottom, #ffffff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* 简约扁平化标题 */
+        .brand-flat {
+            color: #ffffff;
+            letter-spacing: 0.1em;
+            font-weight: 700;
         }
-        .gold-glow { 
-            background: linear-gradient(to bottom, #d4af37 0%, #fef3c7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3); 
-        }
+        .admin-mode .brand-flat { color: #d4af37; }
 
         .animate-up { animation: slideUp 0.4s ease-out forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        input::placeholder { color: rgba(156, 163, 175, 0.5); font-size: 1rem; }
+        input::placeholder { color: rgba(156, 163, 175, 0.4); }
         .loading { opacity: 0.5; pointer-events: none; }
 
-        /* 版本角标 */
-        .version-tag {
+        /* 复制按钮动画 */
+        .copy-btn:active { scale: 0.9; }
+        .copy-success-tip {
             position: absolute;
-            bottom: 24px;
-            right: 24px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 800;
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 0.05em;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: 0.3s;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 md:p-10 antialiased">
+<body class="min-h-screen flex items-center justify-center p-4 antialiased">
 
-<div id="mainContainer" class="glass p-10 md:p-20 rounded-[3.5rem] w-full md:w-[600px] shadow-2xl transition-all duration-700">
+<div id="mainContainer" class="glass rounded-[2.5rem] w-full max-w-5xl shadow-2xl transition-all duration-700 overflow-hidden flex flex-col md:flex-row">
     
-    <div class="text-center mb-16">
-        <h1 id="brand" class="brand-text text-6xl md:text-7xl font-black italic tracking-[0.2em] transition-all duration-500">MCORE</h1>
-        <p id="subTitle" class="text-gray-400 text-sm font-bold tracking-[0.5em] mt-6 uppercase opacity-60">数据授权中心</p>
+    <div class="p-10 md:p-16 flex flex-col justify-center items-center md:items-start md:w-2/5 border-b md:border-b-0 md:border-r border-white/5">
+        <h1 id="brand" class="brand-flat text-5xl md:text-6xl mb-4 transition-all duration-500">MCORE</h1>
+        <p id="subTitle" class="text-gray-400 text-xs font-bold tracking-[0.4em] uppercase opacity-60">数据授权中心</p>
     </div>
 
-    <div class="space-y-6">
-        <input type="text" id="orderId" oninput="checkSuper(this.value)" placeholder="请输入授权订单号" 
-            class="w-full bg-black/40 border border-white/5 rounded-3xl px-8 py-5 focus:outline-none text-center font-mono text-xl transition-all focus:border-indigo-500/50">
-        
-        <div class="flex items-center gap-6 px-4">
-            <div class="h-[1px] flex-1 bg-white/5"></div>
-            <span class="text-[11px] text-gray-600 font-bold uppercase tracking-widest">Verification</span>
-            <div class="h-[1px] flex-1 bg-white/5"></div>
+    <div class="p-10 md:p-16 flex-1 flex flex-col justify-center">
+        <div class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="orderId" oninput="checkSuper(this.value)" placeholder="授权订单号" 
+                    class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all focus:border-indigo-500/40">
+                
+                <input type="tel" id="phoneNum" oninput="checkSuper(this.value)" placeholder="购买手机号" 
+                    class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all focus:border-indigo-500/40">
+            </div>
+            
+            <button onclick="process()" id="actionBtn" class="w-full py-4 bg-indigo-600 rounded-2xl font-bold text-base tracking-widest transition-all shadow-xl hover:bg-indigo-500 active:scale-[0.98]">
+                开始安全提取
+            </button>
+
+            <div id="resultArea" class="hidden mt-8 animate-up">
+                <div class="relative p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3 font-bold">Authorized Key</p>
+                    
+                    <div class="flex items-center gap-4 w-full">
+                        <div id="keyCode" class="flex-1 text-xl md:text-2xl font-mono font-bold break-all select-all tracking-wider text-indigo-400 text-center"></div>
+                        
+                        <button onclick="copyKey()" class="copy-btn relative p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all group">
+                            <span id="copyTip" class="copy-success-tip">已复制</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="status" class="mt-4 text-[10px] opacity-40 italic">提取成功：请在客户端输入此码完成激活</div>
+                </div>
+            </div>
         </div>
-
-        <input type="tel" id="phoneNum" oninput="checkSuper(this.value)" placeholder="请输入购买手机号" 
-            class="w-full bg-black/40 border border-white/5 rounded-3xl px-8 py-5 focus:outline-none text-center font-mono text-xl transition-all focus:border-indigo-500/50">
-        
-        <button onclick="process()" id="actionBtn" class="w-full mt-6 py-5 bg-indigo-600 rounded-3xl font-black text-lg tracking-[0.2em] transition-all shadow-2xl hover:bg-indigo-500 active:scale-[0.97]">
-            开始安全提取
-        </button>
-
-        <div id="resultArea" class="hidden mt-10 p-8 bg-black/40 rounded-[2.5rem] border border-white/5 border-dashed text-center animate-up">
-            <p id="label" class="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-4 italic font-bold">Authorized Key</p>
-            <div id="keyCode" class="text-2xl font-mono font-bold break-all select-all tracking-wider text-indigo-400"></div>
-            <div id="status" class="mt-6 text-[10px] opacity-40 italic tracking-wider">授权码已发放，请在客户端激活以锁定环境</div>
-        </div>
-    </div>
-
-    <div class="version-tag">
-        数据（图片）重复检查 1.0
     </div>
 </div>
 
@@ -105,15 +106,11 @@
         
         if (isSuper) {
             document.body.classList.add('admin-mode');
-            brand.classList.add('gold-glow');
-            brand.classList.remove('brand-text');
             sub.innerText = "超级权限模式";
             btn.innerText = "立即提取库存";
             btn.classList.replace('bg-indigo-600', 'bg-amber-600');
         } else {
             document.body.classList.remove('admin-mode');
-            brand.classList.remove('gold-glow');
-            brand.classList.add('brand-text');
             sub.innerText = "数据授权中心";
             btn.innerText = "开始安全提取";
             btn.classList.replace('bg-amber-600', 'bg-indigo-600');
@@ -126,22 +123,20 @@
         const btn = document.getElementById('actionBtn');
         
         if(!order || !phone) {
-            alert("请完整填写订单号和手机号");
+            alert("请填写信息");
             return;
         }
 
         btn.classList.add('loading');
-        btn.innerText = "正在检索数据库...";
+        btn.innerText = "正在检索...";
 
         try {
             const resPool = await fetch(`${POOL_RAW}?t=${Date.now()}`);
-            if (!resPool.ok) throw new Error("无法连接至授权库");
-            
             const poolData = await resPool.json();
             const pool = poolData.pool || [];
 
             if (pool.length === 0) {
-                render("库存不足", "text-red-500", "授权公库当前为空，请联系客服补货");
+                render("库存不足", "text-red-500", "授权库为空，请联系客服补货");
                 return;
             }
 
@@ -153,14 +148,13 @@
             const success = await preBindOrder(targetCode, order, phone);
 
             if (success) {
-                render(targetCode, "text-indigo-400", "提取成功：请在客户端输入此码完成激活");
+                render(targetCode, "text-indigo-400", "提取成功：点击右侧按钮可一键复制");
             } else {
-                render("记录失败", "text-red-400", "云端握手失败，请检查 Worker 配置");
+                render("记录失败", "text-red-400", "云端同步失败，请检查网络");
             }
 
         } catch (e) {
-            console.error(e);
-            alert("通信异常: " + e.message);
+            alert("异常: " + e.message);
         } finally {
             btn.classList.remove('loading');
             btn.innerText = (order === SUPER_CODE) ? "立即提取库存" : "开始安全提取";
@@ -172,27 +166,30 @@
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    code: code,
-                    order_id: order,
-                    phone: phone
-                })
+                body: JSON.stringify({ code, order_id: order, phone })
             });
             const result = await response.json();
             return result.success; 
-        } catch (err) {
-            console.error("Worker Sync Error:", err);
-            return false;
-        }
+        } catch (err) { return false; }
     }
 
     function render(code, colorClass, statusTxt) {
         const resArea = document.getElementById('resultArea');
         const keyDisp = document.getElementById('keyCode');
         keyDisp.innerText = code;
-        keyDisp.className = `text-2xl font-mono font-bold tracking-wider select-all ${colorClass}`;
+        keyDisp.className = `flex-1 text-xl md:text-2xl font-mono font-bold break-all select-all tracking-wider text-center ${colorClass}`;
         document.getElementById('status').innerText = statusTxt;
         resArea.classList.remove('hidden');
+    }
+
+    // 一键复制功能
+    function copyKey() {
+        const text = document.getElementById('keyCode').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const tip = document.getElementById('copyTip');
+            tip.style.opacity = '1';
+            setTimeout(() => tip.style.opacity = '0', 1500);
+        });
     }
 </script>
 </body>
