@@ -46,13 +46,12 @@
         <div id="resultArea" class="hidden mt-8 p-6 bg-black/40 rounded-3xl border border-white/5 border-dashed text-center animate-up">
             <p id="label" class="text-[9px] text-gray-500 uppercase tracking-widest mb-3 italic">Authorized Key</p>
             <div id="keyCode" class="text-xl font-mono font-bold break-all select-all tracking-wider text-indigo-400"></div>
-            <div id="status" class="mt-4 text-[9px] opacity-40 italic">数据已于云端实时同步</div>
+            <div id="status" class="mt-4 text-[9px] opacity-40 italic">授权码已发放，请在客户端激活以锁定环境</div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- 配置区 ---
     const WORKER_URL = "https://auth.maxus.work"; 
     const POOL_RAW = "https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/pool.json";
     const SUPER_CODE = "940715";
@@ -66,7 +65,7 @@
         if (isSuper) {
             document.body.classList.add('admin-mode');
             brand.classList.add('gold-glow');
-            sub.innerText = "超级权限提取模式";
+            sub.innerText = "超级权限模式";
             btn.innerText = "立即提取库存";
         } else {
             document.body.classList.remove('admin-mode');
@@ -87,92 +86,78 @@
         }
 
         btn.classList.add('loading');
-        btn.innerText = "正在云端握手...";
+        btn.innerText = "正在检索数据库...";
 
         try {
-            // 1. 获取公库数据
             const resPool = await fetch(`${POOL_RAW}?t=${Date.now()}`);
-            if (!resPool.ok) throw new Error("无法连接至 GitHub 库");
+            if (!resPool.ok) throw new Error("无法连接至授权库");
             
             const poolData = await resPool.json();
             const pool = poolData.pool || [];
 
             if (pool.length === 0) {
-                render("库存不足", "text-red-500", "授权公库当前为空，请联系客服");
+                render("库存不足", "text-red-500", "授权公库当前为空，请联系客服补货");
                 return;
             }
 
-            // 确定目标激活码
+            // 确定性哈希选择激活码
             let hash = 0;
             const seed = order + phone;
             for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
             const targetCode = pool[Math.abs(hash) % pool.length].code;
 
-            // 2. 绑定并记录动态地理位置
-            const success = await saveBindingToDB(targetCode, order, phone);
+            // 预绑定订单，但不记录地理位置（由客户端激活时完成）
+            const success = await preBindOrder(targetCode, order, phone);
 
             if (success) {
-                render(targetCode, "text-indigo-400", "提取成功：已自动绑定当前物理节点");
+                render(targetCode, "text-indigo-400", "提取成功：请在客户端输入此码完成激活");
             } else {
-                render("同步失败", "text-red-400", "网络环境不稳定，请尝试切换流量重试");
+                render("同步失败", "text-red-400", "云端握手超时，请检查网络后重试");
             }
 
         } catch (e) {
             console.error(e);
-            alert("同步异常: " + e.message);
+            alert("通信异常: " + e.message);
         } finally {
             btn.classList.remove('loading');
             btn.innerText = (order === SUPER_CODE) ? "立即提取库存" : "开始安全提取";
         }
     }
 
-    async function saveBindingToDB(code, order, phone) {
+    async function preBindOrder(code, order, phone) {
         try {
-            // A. 从自定义域名 Worker 获取最新数据及访问者 IP/地理信息
             const getRes = await fetch(WORKER_URL);
-            if (!getRes.ok) throw new Error("Worker 响应失败");
+            if (!getRes.ok) return false;
             
             const data = await getRes.json();
             const db = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-            
-            // 获取由 Worker 识别的真实位置
-            const vGeo = data.visitorGeo || {};
-
-            const dateStr = new Date().toLocaleDateString();
-            const dynamicGeo = {
-                province: vGeo.province || "未知",
-                city: vGeo.city || "未知",
-                district: "自动识别",
-                road: "自动识别",
-                ip: vGeo.ip || "0.0.0.0"
-            };
 
             let keyObj = db.keys.find(k => k.code === code);
+
             if (keyObj) {
+                // 如果已存在，仅更新关联订单，不触碰激活状态和地理位置
                 keyObj.order_id = order;
                 keyObj.phone = phone;
-                keyObj.geo = dynamicGeo; 
-                keyObj.active_date = dateStr;
             } else {
+                // 创建新条目
                 db.keys.push({
                     code: code,
                     mid: "",
                     order_id: order,
                     phone: phone,
-                    status: "unused",
-                    active_date: dateStr,
+                    status: "unused", // 关键：标记为未使用
+                    active_date: "",
                     reset_history: [],
-                    geo: dynamicGeo
+                    geo: { province: "待激活", city: "待激活", district: "", road: "", ip: "0.0.0.0" }
                 });
             }
 
-            // B. 提交回 Worker
             const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
             const putRes = await fetch(WORKER_URL, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: `Client-Bind: ${code}`,
+                    message: `Pre-Bind: ${code}`,
                     content: updatedContent,
                     sha: data.sha
                 })
@@ -180,7 +165,7 @@
 
             return putRes.ok;
         } catch (err) {
-            console.error("Save Error:", err);
+            console.error("Worker Sync Error:", err);
             return false;
         }
     }
