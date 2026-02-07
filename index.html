@@ -100,19 +100,18 @@
                 return;
             }
 
-            // 确定性哈希选择激活码
             let hash = 0;
             const seed = order + phone;
             for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
             const targetCode = pool[Math.abs(hash) % pool.length].code;
 
-            // 预绑定订单，但不记录地理位置（由客户端激活时完成）
+            // 关键改动：直接让远程 Worker 去记录订单
             const success = await preBindOrder(targetCode, order, phone);
 
             if (success) {
                 render(targetCode, "text-indigo-400", "提取成功：请在客户端输入此码完成激活");
             } else {
-                render("同步失败", "text-red-400", "云端握手超时，请检查网络后重试");
+                render("记录失败", "text-red-400", "云端握手失败，请检查 Worker 配置");
             }
 
         } catch (e) {
@@ -124,46 +123,21 @@
         }
     }
 
+    // 修改后的核心函数：不再本地改数据库，只发 POST 指令给 Worker
     async function preBindOrder(code, order, phone) {
         try {
-            const getRes = await fetch(WORKER_URL);
-            if (!getRes.ok) return false;
-            
-            const data = await getRes.json();
-            const db = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-
-            let keyObj = db.keys.find(k => k.code === code);
-
-            if (keyObj) {
-                // 如果已存在，仅更新关联订单，不触碰激活状态和地理位置
-                keyObj.order_id = order;
-                keyObj.phone = phone;
-            } else {
-                // 创建新条目
-                db.keys.push({
-                    code: code,
-                    mid: "",
-                    order_id: order,
-                    phone: phone,
-                    status: "unused", // 关键：标记为未使用
-                    active_date: "",
-                    reset_history: [],
-                    geo: { province: "待激活", city: "待激活", district: "", road: "", ip: "0.0.0.0" }
-                });
-            }
-
-            const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(db, null, 2))));
-            const putRes = await fetch(WORKER_URL, {
-                method: 'PUT',
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: `Pre-Bind: ${code}`,
-                    content: updatedContent,
-                    sha: data.sha
+                    code: code,
+                    order_id: order,
+                    phone: phone
                 })
             });
 
-            return putRes.ok;
+            const result = await response.json();
+            return result.success; 
         } catch (err) {
             console.error("Worker Sync Error:", err);
             return false;
