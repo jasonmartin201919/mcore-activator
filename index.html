@@ -9,45 +9,86 @@
         :root { --bg: #0f172a; }
         .admin-mode { --bg: #1a150e; }
         body { background-color: var(--bg); transition: all 0.6s ease; color: white; font-family: system-ui; }
-        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* 玻璃拟态容器 - 自适应屏幕 */
+        .glass { 
+            background: rgba(30, 41, 59, 0.4); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            position: relative;
+        }
         .admin-mode .glass { background: rgba(45, 38, 25, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); }
-        .gold-glow { color: #d4af37 !important; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        
+        /* 文字效果 */
+        .brand-text {
+            background: linear-gradient(to bottom, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-glow { 
+            background: linear-gradient(to bottom, #d4af37 0%, #fef3c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3); 
+        }
+
         .animate-up { animation: slideUp 0.4s ease-out forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        input::placeholder { color: rgba(156, 163, 175, 0.5); font-size: 0.9rem; }
+        
+        input::placeholder { color: rgba(156, 163, 175, 0.5); font-size: 1rem; }
         .loading { opacity: 0.5; pointer-events: none; }
+
+        /* 版本角标 */
+        .version-tag {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.05em;
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 antialiased">
+<body class="min-h-screen flex items-center justify-center p-4 md:p-10 antialiased">
 
-<div id="mainContainer" class="glass p-10 md:p-14 rounded-[3rem] w-full max-w-md shadow-2xl transition-all duration-700">
-    <div class="text-center mb-10">
-        <h1 id="brand" class="text-3xl font-black italic tracking-tighter transition-all">MCORE</h1>
-        <p id="subTitle" class="text-gray-400 text-sm font-bold tracking-widest mt-2 uppercase">数据授权中心</p>
+<div id="mainContainer" class="glass p-10 md:p-20 rounded-[3.5rem] w-full md:w-[600px] shadow-2xl transition-all duration-700">
+    
+    <div class="text-center mb-16">
+        <h1 id="brand" class="brand-text text-6xl md:text-7xl font-black italic tracking-[0.2em] transition-all duration-500">MCORE</h1>
+        <p id="subTitle" class="text-gray-400 text-sm font-bold tracking-[0.5em] mt-6 uppercase opacity-60">数据授权中心</p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-6">
         <input type="text" id="orderId" oninput="checkSuper(this.value)" placeholder="请输入授权订单号" 
-            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all">
+            class="w-full bg-black/40 border border-white/5 rounded-3xl px-8 py-5 focus:outline-none text-center font-mono text-xl transition-all focus:border-indigo-500/50">
         
-        <div class="flex items-center gap-4 px-4">
+        <div class="flex items-center gap-6 px-4">
             <div class="h-[1px] flex-1 bg-white/5"></div>
-            <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">AND</span>
+            <span class="text-[11px] text-gray-600 font-bold uppercase tracking-widest">Verification</span>
             <div class="h-[1px] flex-1 bg-white/5"></div>
         </div>
 
         <input type="tel" id="phoneNum" oninput="checkSuper(this.value)" placeholder="请输入购买手机号" 
-            class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-center font-mono text-lg transition-all">
+            class="w-full bg-black/40 border border-white/5 rounded-3xl px-8 py-5 focus:outline-none text-center font-mono text-xl transition-all focus:border-indigo-500/50">
         
-        <button onclick="process()" id="actionBtn" class="w-full mt-4 py-4 bg-indigo-600 rounded-2xl font-bold tracking-widest transition-all shadow-xl hover:brightness-110 active:scale-[0.98]">
+        <button onclick="process()" id="actionBtn" class="w-full mt-6 py-5 bg-indigo-600 rounded-3xl font-black text-lg tracking-[0.2em] transition-all shadow-2xl hover:bg-indigo-500 active:scale-[0.97]">
             开始安全提取
         </button>
 
-        <div id="resultArea" class="hidden mt-8 p-6 bg-black/40 rounded-3xl border border-white/5 border-dashed text-center animate-up">
-            <p id="label" class="text-[9px] text-gray-500 uppercase tracking-widest mb-3 italic">Authorized Key</p>
-            <div id="keyCode" class="text-xl font-mono font-bold break-all select-all tracking-wider text-indigo-400"></div>
-            <div id="status" class="mt-4 text-[9px] opacity-40 italic">授权码已发放，请在客户端激活以锁定环境</div>
+        <div id="resultArea" class="hidden mt-10 p-8 bg-black/40 rounded-[2.5rem] border border-white/5 border-dashed text-center animate-up">
+            <p id="label" class="text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-4 italic font-bold">Authorized Key</p>
+            <div id="keyCode" class="text-2xl font-mono font-bold break-all select-all tracking-wider text-indigo-400"></div>
+            <div id="status" class="mt-6 text-[10px] opacity-40 italic tracking-wider">授权码已发放，请在客户端激活以锁定环境</div>
         </div>
+    </div>
+
+    <div class="version-tag">
+        数据（图片）重复检查 1.0
     </div>
 </div>
 
@@ -65,13 +106,17 @@
         if (isSuper) {
             document.body.classList.add('admin-mode');
             brand.classList.add('gold-glow');
+            brand.classList.remove('brand-text');
             sub.innerText = "超级权限模式";
             btn.innerText = "立即提取库存";
+            btn.classList.replace('bg-indigo-600', 'bg-amber-600');
         } else {
             document.body.classList.remove('admin-mode');
             brand.classList.remove('gold-glow');
+            brand.classList.add('brand-text');
             sub.innerText = "数据授权中心";
             btn.innerText = "开始安全提取";
+            btn.classList.replace('bg-amber-600', 'bg-indigo-600');
         }
     }
 
@@ -105,7 +150,6 @@
             for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
             const targetCode = pool[Math.abs(hash) % pool.length].code;
 
-            // 关键改动：直接让远程 Worker 去记录订单
             const success = await preBindOrder(targetCode, order, phone);
 
             if (success) {
@@ -123,7 +167,6 @@
         }
     }
 
-    // 修改后的核心函数：不再本地改数据库，只发 POST 指令给 Worker
     async function preBindOrder(code, order, phone) {
         try {
             const response = await fetch(WORKER_URL, {
@@ -135,7 +178,6 @@
                     phone: phone
                 })
             });
-
             const result = await response.json();
             return result.success; 
         } catch (err) {
@@ -148,7 +190,7 @@
         const resArea = document.getElementById('resultArea');
         const keyDisp = document.getElementById('keyCode');
         keyDisp.innerText = code;
-        keyDisp.className = `text-xl font-mono font-bold tracking-wider select-all ${colorClass}`;
+        keyDisp.className = `text-2xl font-mono font-bold tracking-wider select-all ${colorClass}`;
         document.getElementById('status').innerText = statusTxt;
         resArea.classList.remove('hidden');
     }
