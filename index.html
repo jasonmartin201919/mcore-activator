@@ -128,9 +128,29 @@
         }
 
         btn.classList.add('loading');
-        btn.innerText = "正在检索...";
+        btn.innerText = "安全审计中...";
 
         try {
+            // --- 新增校验逻辑：检查是否已经提取过 ---
+            // 直接请求 Worker 的 GET 接口获取 db.json 数据
+            const resDb = await fetch(`${WORKER_URL}?t=${Date.now()}`);
+            const dbDataJson = await resDb.json();
+            
+            // 解码 db.json 内容 (Worker 返回的是 GitHub 的原始 API 响应)
+            const content = atob(dbDataJson.content.replace(/\s/g, ""));
+            const db = JSON.parse(decodeURIComponent(escape(content)));
+
+            // 查找是否已有相同的手机号或订单号（排除超级授权码情况）
+            if (order !== SUPER_CODE) {
+                const existingEntry = db.keys.find(k => k.phone === phone || k.order_id === order);
+                if (existingEntry) {
+                    // 如果找到了，直接显示旧的激活码，不分配新的
+                    render(existingEntry.code, "text-amber-400", "您已提取过授权码，请勿重复操作");
+                    return;
+                }
+            }
+
+            // --- 原有逻辑：提取新码 ---
             const resPool = await fetch(`${POOL_RAW}?t=${Date.now()}`);
             const poolData = await resPool.json();
             const pool = poolData.pool || [];
