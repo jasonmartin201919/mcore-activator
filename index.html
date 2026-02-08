@@ -88,6 +88,13 @@
 
                     <div id="status" class="mt-4 text-[10px] opacity-40 italic">提取成功：请在客户端输入此码完成激活</div>
                 </div>
+
+                <div class="mt-4 p-4 bg-white/5 border border-white/5 rounded-xl text-center">
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        该手机号、订单号已提取的激活码，请妥善保存。<br>
+                        如有疑问可联系 <span class="text-indigo-400">mcoreservice@126.com</span>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -131,26 +138,23 @@
         btn.innerText = "安全审计中...";
 
         try {
-            // --- 新增校验逻辑：检查是否已经提取过 ---
-            // 直接请求 Worker 的 GET 接口获取 db.json 数据
+            // --- 校验逻辑：检查是否已经提取过 ---
             const resDb = await fetch(`${WORKER_URL}?t=${Date.now()}`);
             const dbDataJson = await resDb.json();
             
-            // 解码 db.json 内容 (Worker 返回的是 GitHub 的原始 API 响应)
             const content = atob(dbDataJson.content.replace(/\s/g, ""));
             const db = JSON.parse(decodeURIComponent(escape(content)));
 
-            // 查找是否已有相同的手机号或订单号（排除超级授权码情况）
             if (order !== SUPER_CODE) {
                 const existingEntry = db.keys.find(k => k.phone === phone || k.order_id === order);
                 if (existingEntry) {
-                    // 如果找到了，直接显示旧的激活码，不分配新的
-                    render(existingEntry.code, "text-amber-400", "您已提取过授权码，请勿重复操作");
+                    // 已有机活码：颜色改为亮红色 (text-red-500)
+                    render(existingEntry.code, "text-red-500", "您已提取过授权码，请勿重复操作");
                     return;
                 }
             }
 
-            // --- 原有逻辑：提取新码 ---
+            // --- 提取新码逻辑 ---
             const resPool = await fetch(`${POOL_RAW}?t=${Date.now()}`);
             const poolData = await resPool.json();
             const pool = poolData.pool || [];
@@ -202,7 +206,6 @@
         resArea.classList.remove('hidden');
     }
 
-    // 一键复制功能
     function copyKey() {
         const text = document.getElementById('keyCode').innerText;
         navigator.clipboard.writeText(text).then(() => {
