@@ -95,19 +95,49 @@
     let CURRENT_SID = new URLSearchParams(window.location.search).get('sid');
     let DEVICE_ID = "";
 
+    /**
+     * 高级硬件指纹生成函数 (Canvas Fingerprinting)
+     * 利用不同显卡对 Canvas 像素渲染的微小差异生成唯一 ID
+     */
+    function generateAdvancedFingerprint() {
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const txt = 'MCORE-AUTH-V1-SECURITY';
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.textBaseline = "alphabetic";
+            ctx.fillStyle = "#f60";
+            ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#069";
+            ctx.fillText(txt, 2, 15);
+            ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+            ctx.fillText(txt, 4, 17);
+            
+            // 获取 Canvas 图像数据的摘要作为硬件特征
+            const canvasData = canvas.toDataURL();
+            // 混合浏览器 UserAgent + 颜色深度 + Canvas 数据进行 Base64 编码
+            const rawId = navigator.userAgent + screen.colorDepth + canvasData.slice(-50);
+            return btoa(rawId).replace(/[/+=]/g, "").slice(0, 24);
+        } catch (e) {
+            // 兜底方案：如果 Canvas 被禁用
+            return btoa(navigator.userAgent + screen.width).slice(0, 24);
+        }
+    }
+
     // 1. 模拟 Gate 逻辑：获取机器码并生成/校验 SID
     async function initGate() {
-        // 采集机器码指纹
-        DEVICE_ID = btoa(navigator.userAgent + screen.width + (window.devicePixelRatio || 1)).slice(0, 16);
-        console.log("Current Device Fingerprint:", DEVICE_ID);
+        // 采集高级硬件机器码
+        DEVICE_ID = generateAdvancedFingerprint();
+        console.log("Hardware Unique ID:", DEVICE_ID);
         
         if (!CURRENT_SID) {
-            console.log("No SID found, requesting new session...");
+            console.log("No SID found, requesting new session with hardware lock...");
             try {
                 const res = await fetch(`${WORKER_URL}/get-sid`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ device: DEVICE_ID }) // 关键：申请时提交当前机器码
+                    body: JSON.stringify({ device: DEVICE_ID }) // 将硬件 ID 发送给 Worker 存入 KV 锁定
                 });
                 const data = await res.json();
                 if (data.sid) {
@@ -123,18 +153,17 @@
             }
         }
 
-        // 校验现有 SID：必须同时匹配 SID 和 DEVICE_ID
+        // 校验现有 SID：Worker 会比对 KV 中存储的 ID 与当前计算出的 ID
         try {
-            console.log("Validating SID:", CURRENT_SID);
-            // 关键修改：校验请求必须带上当前设备的 DEVICE_ID
+            console.log("Validating SID with Hardware ID...");
             const check = await fetch(`${WORKER_URL}/check-sid?sid=${CURRENT_SID}&device=${DEVICE_ID}`);
             const status = await check.json();
             
             if (status.valid) {
-                console.log("Access Granted");
+                console.log("Access Granted: Device matched");
                 enterIndex();
             } else {
-                console.warn("Access Denied: SID expired or device mismatch");
+                console.warn("Access Denied: Link shared or expired");
                 showExpire();
             }
         } catch (e) { 
@@ -172,7 +201,7 @@
                 body: JSON.stringify({
                     sid: CURRENT_SID,
                     phone: phone,
-                    device: DEVICE_ID // 绑定时再次提交，确保 Worker 端三方一致
+                    device: DEVICE_ID // 绑定时再次提交，确保 Worker 端记录一致
                 })
             });
             const result = await response.json();
