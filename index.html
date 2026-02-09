@@ -7,71 +7,84 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --bg: #0f172a; --accent: #6366f1; --danger: #ef4444; }
-        body { background-color: var(--bg); color: white; font-family: system-ui, sans-serif; overflow-x: hidden; }
+        body { background-color: var(--bg); color: white; font-family: system-ui, sans-serif; overflow: hidden; }
         .glass { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-primary { background: var(--accent); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px var(--accent); }
-        .expire-mask { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+        .animate-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 加载动画 */
+        .loader { width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: var(--accent); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-<div id="expireOverlay" class="hidden fixed inset-0 z-50 expire-mask flex items-center justify-center p-6 text-center">
-    <div class="max-w-sm space-y-6">
-        <div class="w-20 h-20 bg-red-500/20 border border-red-500/50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        </div>
-        <h2 class="text-2xl font-bold">授权链接已失效</h2>
-        <p class="text-gray-400 text-sm">出于安全考虑，下载链接仅 30 分钟内有效。请关注公众号获取最新入口或人工支持。</p>
-        <div class="p-4 bg-white/5 rounded-2xl border border-white/10">
-            <p class="text-xs text-gray-500 mb-2">微信搜索关注</p>
-            <p class="text-lg font-bold tracking-widest text-indigo-400">您的公众号名称</p>
-        </div>
-        <button onclick="location.href='https://auth.maxus.work'" class="text-xs text-gray-500 underline">返回首页</button>
+<div id="gateOverlay" class="fixed inset-0 z-[60] bg-[#0f172a] flex flex-col items-center justify-center space-y-6 transition-opacity duration-500">
+    <span class="loader"></span>
+    <div class="text-center">
+        <h2 class="text-xl font-bold tracking-widest">安全环境检测中</h2>
+        <p class="text-gray-500 text-xs mt-2">正在为您分配专属 30 分钟下载通道...</p>
     </div>
 </div>
 
-<div id="mainContent" class="glass rounded-[2.5rem] w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+<div id="expireOverlay" class="hidden fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md flex items-center justify-center p-6 text-center">
+    <div class="max-w-sm space-y-6">
+        <div class="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mx-auto">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <h2 class="text-2xl font-bold">下载链接已失效</h2>
+        <p class="text-gray-400 text-sm">链接有效期 30 分钟。请关注公众号重新获取链接或联系技术支持。</p>
+        <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
+            <p class="text-[10px] text-gray-500 mb-2 uppercase tracking-widest font-bold">WeChat Support</p>
+            <p class="text-xl font-bold text-indigo-400">您的公众号名称</p>
+        </div>
+    </div>
+</div>
+
+<div id="mainContent" class="glass rounded-[2.5rem] w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[550px] opacity-0 transition-opacity duration-700">
     
-    <div class="p-10 md:p-16 flex flex-col justify-center items-center md:items-start md:w-2/5 border-b md:border-b-0 md:border-r border-white/5">
-        <h1 class="text-5xl font-bold mb-2 tracking-tighter">MCORE</h1>
-        <p class="text-indigo-400 text-[10px] font-bold tracking-[0.3em] uppercase mb-8">Professional Edition</p>
+    <div class="p-10 md:p-16 flex flex-col justify-center items-center md:items-start md:w-2/5 border-b md:border-b-0 md:border-r border-white/5 bg-white/5">
+        <h1 class="text-6xl font-black mb-2 tracking-tighter">MCORE</h1>
+        <p class="text-indigo-400 text-[10px] font-bold tracking-[0.4em] uppercase mb-12">Authorized Only</p>
         
-        <a href="您的安装包下载直链" id="downloadBtn" class="flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/10 transition-all group">
-            <svg class="w-6 h-6 text-indigo-400 group-hover:bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span class="font-bold text-sm tracking-widest">下载软件安装包</span>
+        <a href="您的软件网盘链接" class="group flex items-center gap-4 px-10 py-5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl transition-all shadow-lg shadow-indigo-500/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span class="font-bold tracking-widest text-sm">下载 MCORE 安装包</span>
         </a>
+        <p class="mt-4 text-[10px] text-gray-500 font-medium italic">适用系统：Windows 10 / 11</p>
     </div>
 
-    <div class="p-10 md:p-16 flex-1 flex flex-col justify-center">
-        <div id="inputForm" class="space-y-6">
+    <div class="p-10 md:p-16 flex-1 flex flex-col justify-center bg-black/10">
+        <div id="inputForm" class="space-y-8">
             <div class="space-y-2">
-                <label class="text-[10px] text-gray-500 uppercase tracking-widest ml-1">备案手机号</label>
-                <input type="tel" id="phoneNum" placeholder="请输入您的购买手机号" 
-                    class="w-full bg-black/30 border border-white/5 rounded-2xl px-6 py-4 focus:outline-none text-xl font-mono transition-all focus:border-indigo-500/40">
+                <label class="text-[10px] text-gray-500 uppercase tracking-widest ml-1 font-bold">备案手机号</label>
+                <input type="tel" id="phoneNum" placeholder="请输入购买时的手机号" 
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-5 focus:outline-none text-2xl font-mono transition-all focus:border-indigo-500/40 focus:bg-white/10">
             </div>
-            
-            <button onclick="submitActivation()" id="activeBtn" class="btn-primary w-full py-4 rounded-2xl font-bold tracking-[0.2em]">
-                领取激活码并绑定
+            <button onclick="handleBind()" id="activeBtn" class="w-full py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-bold tracking-[0.3em] text-sm transition-all active:scale-95">
+                备案并获取激活码
             </button>
         </div>
 
-        <div id="resultArea" class="hidden space-y-4 animate-up">
-            <div class="p-6 bg-white/5 rounded-3xl border border-white/10 text-center relative overflow-hidden">
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Authorized Activation Key</p>
-                <div id="keyCode" class="text-2xl md:text-3xl font-mono font-bold break-all text-white"></div>
-                
-                <div id="repeatNotice" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                    <p class="text-[11px] text-red-400">该设备及手机号已完成备案，请保存激活码</p>
+        <div id="resultArea" class="hidden animate-up space-y-6">
+            <div class="p-8 bg-white/5 rounded-[2rem] border border-white/10 text-center relative">
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-4 font-bold">Authorized Activation Key</p>
+                <div id="keyCode" class="text-3xl md:text-4xl font-mono font-bold break-all mb-2"></div>
+                <div id="statusTxt" class="text-[10px] opacity-40 italic">备案成功，请务必妥善保存</div>
+
+                <div id="repeatBox" class="hidden mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
+                    <p class="text-[11px] text-red-500 leading-relaxed font-bold">
+                        该设备/手机号已完成授权备案。如有疑问或需要更换电脑，请咨询 mcoreservice@126.com 或公众号客服。
+                    </p>
                 </div>
             </div>
 
-            <div class="p-5 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center justify-between p-6 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl">
                 <div>
-                    <p class="text-xs font-bold text-indigo-300">遇到安装问题？</p>
-                    <p class="text-[10px] text-gray-500">微信搜索：您的公众号名</p>
+                    <p class="text-xs font-bold text-indigo-300">需要视频安装教程？</p>
+                    <p class="text-[10px] text-gray-500 mt-1">微信搜一搜：您的公众号名</p>
                 </div>
-                <div class="text-[10px] bg-indigo-500/20 px-3 py-1 rounded-full text-indigo-300">回复“教程”</div>
+                <div class="px-4 py-2 bg-indigo-500/20 rounded-lg text-indigo-300 text-[10px] font-bold">回复 “激活”</div>
             </div>
         </div>
     </div>
@@ -79,75 +92,99 @@
 
 <script>
     const WORKER_URL = "https://auth.maxus.work";
-    const urlParams = new URLSearchParams(window.location.search);
-    const SID = urlParams.get('sid'); // 获取授权码
+    let CURRENT_SID = new URLSearchParams(window.location.search).get('sid');
+    let DEVICE_ID = "";
 
-    // 页面初始化检查
-    window.onload = async () => {
-        if (!SID || SID.length !== 6) {
-            showExpire();
-            return;
+    // 1. 模拟 Gate 逻辑：获取机器码并生成/校验 SID
+    async function initGate() {
+        // 简单指纹采集：浏览器+显卡驱动+分辨率
+        DEVICE_ID = btoa(navigator.userAgent + screen.width + (window.devicePixelRatio || 1)).slice(0, 16);
+        
+        if (!CURRENT_SID) {
+            // 如果 URL 没有 SID，向后台申请一个
+            try {
+                const res = await fetch(`${WORKER_URL}/get-sid`, {
+                    method: 'POST',
+                    body: JSON.stringify({ device: DEVICE_ID })
+                });
+                const data = await res.json();
+                window.location.replace(`?sid=${data.sid}`);
+                return;
+            } catch (e) { showExpire(); return; }
         }
-        // 向后台验证 SID 是否过期 (30分钟逻辑)
-        const check = await fetch(`${WORKER_URL}/verify-sid?sid=${SID}`);
-        const res = await check.json();
-        if (!res.valid) showExpire();
-    };
 
-    function showExpire() {
-        document.getElementById('expireOverlay').classList.remove('hidden');
-        document.getElementById('mainContent').classList.add('blur-xl', 'pointer-events-none');
+        // 校验现有 SID 是否属于本设备且未过期
+        try {
+            const check = await fetch(`${WORKER_URL}/check-sid?sid=${CURRENT_SID}&device=${DEVICE_ID}`);
+            const status = await check.json();
+            if (!status.valid) {
+                showExpire();
+            } else {
+                enterIndex();
+            }
+        } catch (e) { showExpire(); }
     }
 
-    async function submitActivation() {
+    function enterIndex() {
+        document.getElementById('gateOverlay').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('gateOverlay').style.display = 'none';
+            document.getElementById('mainContent').style.opacity = '1';
+        }, 500);
+    }
+
+    function showExpire() {
+        document.getElementById('gateOverlay').style.display = 'none';
+        document.getElementById('expireOverlay').classList.remove('hidden');
+    }
+
+    // 2. 备案绑定逻辑
+    async function handleBind() {
         const phone = document.getElementById('phoneNum').value.trim();
-        if (!phone || phone.length < 11) return alert("请输入正确的手机号");
+        if (phone.length < 11) return alert("请输入正确的手机号");
 
         const btn = document.getElementById('activeBtn');
         btn.disabled = true;
         btn.innerText = "正在云端备案...";
 
         try {
-            const response = await fetch(`${WORKER_URL}/activate`, {
+            const response = await fetch(`${WORKER_URL}/bind`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    sid: SID,
+                    sid: CURRENT_SID,
                     phone: phone,
-                    // 额外传一个简单的浏览器指纹，备用
-                    fingerprint: navigator.userAgent + screen.width
+                    device: DEVICE_ID
                 })
             });
-            const data = await response.json();
-
-            if (data.success) {
-                showResult(data.code, data.isRepeat);
+            const result = await response.json();
+            
+            if (result.success) {
+                renderResult(result.code, result.isRepeat);
             } else {
-                alert(data.message || "激活失败，请联系公众号客服");
+                alert(result.message || "备案失败");
             }
-        } catch (e) {
-            alert("网络异常");
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "领取激活码并绑定";
-        }
+        } catch (e) { alert("服务器连接失败"); }
+        finally { btn.disabled = false; btn.innerText = "备案并获取激活码"; }
     }
 
-    function showResult(code, isRepeat) {
+    function renderResult(code, isRepeat) {
         document.getElementById('inputForm').classList.add('hidden');
         const resArea = document.getElementById('resultArea');
         const keyDisp = document.getElementById('keyCode');
-        const notice = document.getElementById('repeatNotice');
-
+        
         keyDisp.innerText = code;
         if (isRepeat) {
             keyDisp.classList.add('text-red-500'); // 亮红
-            notice.classList.remove('hidden');
+            document.getElementById('repeatBox').classList.remove('hidden');
+            document.getElementById('statusTxt').innerText = "检测到重复备案";
         } else {
             keyDisp.classList.add('text-indigo-400');
         }
         resArea.classList.remove('hidden');
     }
+
+    window.onload = initGate;
 </script>
 </body>
 </html>
