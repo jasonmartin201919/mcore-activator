@@ -74,7 +74,7 @@
 
                 <div id="repeatBox" class="hidden mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
                     <p class="text-[11px] text-red-500 leading-relaxed font-bold">
-                        该设备/手机号已完成授权备案。如有疑问或需要更换电脑，请咨询 mcoreservice@126.com 或公众号客服。
+                        该授权码已在其他手机号或设备上备案。当前显示为您名下唯一的激活码。
                     </p>
                 </div>
             </div>
@@ -95,10 +95,6 @@
     let CURRENT_SID = new URLSearchParams(window.location.search).get('sid');
     let DEVICE_ID = "";
 
-    /**
-     * 高级硬件指纹生成函数 (Canvas Fingerprinting)
-     * 利用不同显卡对 Canvas 像素渲染的微小差异生成唯一 ID
-     */
     function generateAdvancedFingerprint() {
         try {
             const canvas = document.createElement('canvas');
@@ -113,31 +109,23 @@
             ctx.fillText(txt, 2, 15);
             ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
             ctx.fillText(txt, 4, 17);
-            
-            // 获取 Canvas 图像数据的摘要作为硬件特征
             const canvasData = canvas.toDataURL();
-            // 混合浏览器 UserAgent + 颜色深度 + Canvas 数据进行 Base64 编码
             const rawId = navigator.userAgent + screen.colorDepth + canvasData.slice(-50);
             return btoa(rawId).replace(/[/+=]/g, "").slice(0, 24);
         } catch (e) {
-            // 兜底方案：如果 Canvas 被禁用
             return btoa(navigator.userAgent + screen.width).slice(0, 24);
         }
     }
 
-    // 1. 模拟 Gate 逻辑：获取机器码并生成/校验 SID
     async function initGate() {
-        // 采集高级硬件机器码
         DEVICE_ID = generateAdvancedFingerprint();
-        console.log("Hardware Unique ID:", DEVICE_ID);
         
         if (!CURRENT_SID) {
-            console.log("No SID found, requesting new session with hardware lock...");
             try {
                 const res = await fetch(`${WORKER_URL}/get-sid`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ device: DEVICE_ID }) // 将硬件 ID 发送给 Worker 存入 KV 锁定
+                    body: JSON.stringify({ device: DEVICE_ID })
                 });
                 const data = await res.json();
                 if (data.sid) {
@@ -147,27 +135,26 @@
                 }
                 return;
             } catch (e) { 
-                console.error("Gate Error:", e);
                 showExpire(); 
                 return; 
             }
         }
 
-        // 校验现有 SID：Worker 会比对 KV 中存储的 ID 与当前计算出的 ID
         try {
-            console.log("Validating SID with Hardware ID...");
             const check = await fetch(`${WORKER_URL}/check-sid?sid=${CURRENT_SID}&device=${DEVICE_ID}`);
             const status = await check.json();
             
             if (status.valid) {
-                console.log("Access Granted: Device matched");
+                // 【新增逻辑】进入页面时，先检查该 SID 是否已经绑定过
+                // 如果后端 check-sid 返回了已有的 code，直接显示
+                if (status.bindedCode) {
+                    renderResult(status.bindedCode, true);
+                }
                 enterIndex();
             } else {
-                console.warn("Access Denied: Link shared or expired");
                 showExpire();
             }
         } catch (e) { 
-            console.error("Check Error:", e);
             showExpire(); 
         }
     }
@@ -185,7 +172,6 @@
         document.getElementById('expireOverlay').classList.remove('hidden');
     }
 
-    // 2. 备案绑定逻辑
     async function handleBind() {
         const phone = document.getElementById('phoneNum').value.trim();
         if (phone.length < 11) return alert("请输入正确的手机号");
@@ -201,18 +187,23 @@
                 body: JSON.stringify({
                     sid: CURRENT_SID,
                     phone: phone,
-                    device: DEVICE_ID // 绑定时再次提交，确保 Worker 端记录一致
+                    device: DEVICE_ID 
                 })
             });
             const result = await response.json();
             
+            // 后端逻辑：如果该 SID 已绑定，直接返回第一次绑定的 code，并将 isRepeat 设为 true
             if (result.success) {
                 renderResult(result.code, result.isRepeat);
             } else {
                 alert(result.message || "备案失败");
             }
-        } catch (e) { alert("服务器连接失败"); }
-        finally { btn.disabled = false; btn.innerText = "备案并获取激活码"; }
+        } catch (e) { 
+            alert("服务器连接失败"); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "备案并获取激活码"; 
+        }
     }
 
     function renderResult(code, isRepeat) {
@@ -222,9 +213,9 @@
         
         keyDisp.innerText = code;
         if (isRepeat) {
-            keyDisp.classList.add('text-red-500'); 
+            keyDisp.classList.add('text-indigo-400'); // 即使是重复也显示正常颜色，但弹出提示
             document.getElementById('repeatBox').classList.remove('hidden');
-            document.getElementById('statusTxt').innerText = "检测到重复备案";
+            document.getElementById('statusTxt').innerText = "已调取现有备案记录";
         } else {
             keyDisp.classList.add('text-indigo-400');
         }
