@@ -3,5 +3,14 @@
   "config": {
     "last_update": ""
   },
-  "pool": []
+  "pool": [
+    {
+      "code": "3PDRXJ",
+      "created_at": "2026/2/12 13:14:27"
+    },
+    {
+      "code": "WRYDLM",
+      "created_at": "2026/2/12 13:14:27"
+    }
+  ]
 }
