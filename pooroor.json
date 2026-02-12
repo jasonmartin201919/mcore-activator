@@ -3,5 +3,14 @@
   "config": {
     "last_update": ""
   },
-  "pool": []
+  "pool": [
+    {
+      "code": "XVT4N8",
+      "created_at": "2026/2/12 13:14:27"
+    },
+    {
+      "code": "RPBX4F",
+      "created_at": "2026/2/12 13:14:27"
+    }
+  ]
 }
