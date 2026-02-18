@@ -181,7 +181,7 @@
                 </div>
 
                 <div class="pt-10">
-                    <a href="你的下载链接" class="download-btn inline-block text-center">立即获取 MCORE</a>
+                    <a id="mainDownloadBtn" href="你的下载链接" class="download-btn inline-block text-center">立即获取 MCORE</a>
                     <p class="text-[10px] text-gray-400 mt-8 tracking-[0.2em]">稳定版本 v2.0.1 | 适用于 Windows 10/11</p>
                 </div>
             </div>
@@ -208,7 +208,7 @@
     <section class="ad-footer-container reveal" style="animation-delay: 0.4s;">
         <div class="ad-box">
             <span class="text-[9px] uppercase tracking-[0.4em] text-gray-300 mb-4">Promoted Content</span>
-            <div class="text-gray-400 text-xs italic">此处投放广告内容</div>
+            <div id="footerAdText" class="text-gray-400 text-xs italic">此处投放广告内容</div>
         </div>
     </section>
 
@@ -222,6 +222,7 @@
     </footer>
 
     <script>
+        // --- 1. 轮播图切换逻辑 ---
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('.dot');
@@ -246,8 +247,8 @@
         }
 
         setInterval(() => showSlide(currentSlide + 1), interval);
-        window.onload = () => showSlide(0);
 
+        // --- 2. 模拟下载量跳动逻辑 (保持吸引力) ---
         let baseCount = 5280;
         function updateCount() {
             baseCount += Math.floor(Math.random() * 3) + 1;
@@ -255,7 +256,50 @@
             if(el) el.innerText = baseCount.toLocaleString();
             setTimeout(updateCount, 3000); 
         }
-        updateCount();
+
+        // --- 3. 动态配置加载 (由管理页控制) ---
+        async function refreshLiveAds() {
+            try {
+                // 读取 config.json
+                const res = await fetch('config.json?t=' + Date.now());
+                if (!res.ok) return;
+                const data = await res.json();
+                const ads = data.ads;
+
+                // 更新轮播图 A 的文字
+                const slideA = slides[0];
+                if (slideA && ads.carousel_a_title) {
+                    slideA.querySelector('.slide-h1').innerText = ads.carousel_a_title;
+                    slideA.querySelector('.slide-p').innerText = ads.carousel_a_subtitle;
+                }
+
+                // 更新轮播图 B 的文字
+                const slideB = slides[1];
+                if (slideB && ads.carousel_b_title) {
+                    slideB.querySelector('.slide-h1').innerText = ads.carousel_b_title;
+                    slideB.querySelector('.slide-p').innerText = ads.carousel_b_subtitle;
+                }
+
+                // 更新底部广告文案
+                if (document.getElementById('footerAdText')) {
+                    document.getElementById('footerAdText').innerText = ads.footer_ad_text;
+                }
+
+                // 更新下载按钮链接
+                if (document.getElementById('mainDownloadBtn')) {
+                    document.getElementById('mainDownloadBtn').href = ads.download_url;
+                }
+
+            } catch (e) {
+                console.log("未检测到配置文件，使用本地默认值");
+            }
+        }
+
+        window.onload = () => {
+            showSlide(0);
+            updateCount();    // 启动模拟数字
+            refreshLiveAds(); // 尝试同步后台配置
+        };
     </script>
 </body>
 </html>
