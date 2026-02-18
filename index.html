@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCORE | 官方发布中心</title>
+    <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 引入自定义字体 */
@@ -55,7 +56,7 @@
             height: 500px; 
             width: 100%;
             overflow: hidden;
-            background: #F3F4F6; /* 默认浅灰色背景 */
+            background: #F3F4F6; /* 默认浅灰色背景，提升首屏速度 */
             border-bottom: 1px solid #EEEEEE;
         }
 
@@ -63,7 +64,7 @@
             position: absolute;
             inset: 0;
             opacity: 0;
-            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.8s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -79,15 +80,25 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
-            opacity: 0.8; 
+            opacity: 0; /* 初始透明，加载后淡入 */
+            transition: opacity 0.5s ease;
         }
 
         .slide.active { opacity: 1; }
-        .slide-content { position: relative; z-index: 20; color: #fff; text-shadow: 0 2px 15px rgba(0,0,0,0.5); }
         
-        /* 关键修复：无媒体时的文字颜色 */
-        .no-media .slide-content { color: #1A1A1A !important; text-shadow: none !important; }
-        .no-media { background: #F3F4F6; }
+        /* 默认文字为黑色，背景图加载成功后由 JS 动态切换为白色 */
+        .slide-content { 
+            position: relative; 
+            z-index: 20; 
+            color: #1A1A1A; 
+            transition: color 0.4s ease, text-shadow 0.4s ease;
+        }
+        
+        /* 当有媒体背景时的样式 */
+        .has-media .slide-content { 
+            color: #FFFFFF; 
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5); 
+        }
 
         .slide-h1 { font-size: 3.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1rem; }
         .slide-p { font-size: 1rem; letter-spacing: 0.2em; font-weight: 300; opacity: 0.9; }
@@ -154,6 +165,8 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
         .ad-overlay {
             position: relative;
@@ -251,7 +264,7 @@
             <div class="media-container w-full h-full absolute inset-0"></div>
             <div class="ad-overlay">
                 <span class="text-[9px] uppercase tracking-[0.4em] text-gray-400 mb-2 block">Promoted Content</span>
-                <div id="footerAdText" class="text-gray-900 text-sm font-bold tracking-widest">加载中...</div>
+                <div id="footerAdText" class="text-gray-900 text-sm font-bold tracking-widest">MCORE: 专注视觉资产清理</div>
             </div>
         </div>
     </section>
@@ -266,13 +279,12 @@
     </footer>
 
     <script>
-        // 配置：如果本地没有 config.json，可以改用 GitHub 的真实地址
         const REMOTE_CONFIG = 'https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json';
 
-        // --- 核心逻辑：媒体渲染器 ---
+        // --- 核心逻辑：媒体渲染器（优化加载） ---
         function renderMedia(container, url) {
             if (!url || url.trim() === "" || url === "#") {
-                container.parentElement.classList.add('no-media');
+                container.parentElement.classList.remove('has-media');
                 return;
             }
             container.innerHTML = "";
@@ -286,18 +298,25 @@
                 video.muted = true;
                 video.playsInline = true;
                 video.className = container.parentElement.className.includes('ad-box') ? "ad-media-bg" : "slide-media";
+                video.oncanplay = () => {
+                    video.style.opacity = "0.8";
+                    container.parentElement.classList.add('has-media');
+                };
                 container.appendChild(video);
             } else {
-                const img = document.createElement('img');
+                const img = new Image();
                 img.src = url;
                 img.className = container.parentElement.className.includes('ad-box') ? "ad-media-bg" : "slide-media";
-                img.onerror = () => container.parentElement.classList.add('no-media');
+                img.onload = () => {
+                    img.style.opacity = "0.8";
+                    container.parentElement.classList.add('has-media');
+                };
+                img.onerror = () => container.parentElement.classList.remove('has-media');
                 container.appendChild(img);
             }
-            container.parentElement.classList.remove('no-media');
         }
 
-        // --- 1. 轮播图切换逻辑 ---
+        // --- 1. 轮播图逻辑 ---
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('.dot');
@@ -321,8 +340,6 @@
             }
         }
 
-        setInterval(() => showSlide(currentSlide + 1), interval);
-
         // --- 2. 下载量跳动 ---
         let baseCount = 5280;
         function updateCount() {
@@ -332,52 +349,62 @@
             setTimeout(updateCount, 3000); 
         }
 
-        // --- 3. 动态配置加载 ---
+        // --- 3. 动态配置加载（优化速度） ---
         async function refreshLiveAds() {
-            // 策略：先尝试加载本地，本地 404 则加载远程 GitHub
             let configUrl = 'config.json';
-            
-            try {
-                let res = await fetch(configUrl + '?t=' + Date.now());
-                if (!res.ok) {
-                    console.warn("本地 config.json 未找到，尝试远程路径...");
-                    res = await fetch(REMOTE_CONFIG + '?t=' + Date.now());
+            const fetchConfig = async (url) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超时切换
+                try {
+                    const res = await fetch(url + '?t=' + Date.now(), { signal: controller.signal });
+                    if (!res.ok) throw new Error();
+                    return await res.json();
+                } finally {
+                    clearTimeout(timeoutId);
                 }
-                
-                const data = await res.json();
-                const ads = data.ads;
+            };
 
-                // 轮播 A
-                const s0 = document.getElementById('slide0');
-                if (ads.carousel_a_title) s0.querySelector('.slide-h1').innerText = ads.carousel_a_title;
-                if (ads.carousel_a_subtitle) s0.querySelector('.slide-p').innerText = ads.carousel_a_subtitle;
-                renderMedia(s0.querySelector('.media-container'), ads.carousel_a_media);
+            try {
+                let data;
+                try {
+                    data = await fetchConfig(configUrl);
+                } catch (e) {
+                    console.warn("本地读取失败，切换远程...");
+                    data = await fetchConfig(REMOTE_CONFIG);
+                }
 
-                // 轮播 B
-                const s1 = document.getElementById('slide1');
-                if (ads.carousel_b_title) s1.querySelector('.slide-h1').innerText = ads.carousel_b_title;
-                if (ads.carousel_b_subtitle) s1.querySelector('.slide-p').innerText = ads.carousel_b_subtitle;
-                renderMedia(s1.querySelector('.media-container'), ads.carousel_b_media);
+                if (data && data.ads) {
+                    const ads = data.ads;
+                    // 轮播内容更新
+                    const s0 = document.getElementById('slide0');
+                    if (ads.carousel_a_title) s0.querySelector('.slide-h1').innerText = ads.carousel_a_title;
+                    if (ads.carousel_a_subtitle) s0.querySelector('.slide-p').innerText = ads.carousel_a_subtitle;
+                    renderMedia(s0.querySelector('.media-container'), ads.carousel_a_media);
 
-                // 底部广告
-                if (ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
-                renderMedia(document.getElementById('footerAdBox').querySelector('.media-container'), ads.footer_ad_media);
+                    const s1 = document.getElementById('slide1');
+                    if (ads.carousel_b_title) s1.querySelector('.slide-h1').innerText = ads.carousel_b_title;
+                    if (ads.carousel_b_subtitle) s1.querySelector('.slide-p').innerText = ads.carousel_b_subtitle;
+                    renderMedia(s1.querySelector('.media-container'), ads.carousel_b_media);
 
-                // 下载链接
-                if (ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
+                    // 底部广告更新
+                    if (ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
+                    renderMedia(document.getElementById('footerAdBox').querySelector('.media-container'), ads.footer_ad_media);
 
+                    // 下载链接
+                    if (ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
+                }
             } catch (e) {
-                console.error("配置加载失败:", e);
-                slides.forEach(s => s.classList.add('no-media'));
-                document.getElementById('footerAdText').innerText = "MCORE: 专注视觉资产清理";
+                console.error("配置加载超时或失败");
             }
         }
 
-        window.onload = () => {
+        // 初始化任务队列
+        document.addEventListener('DOMContentLoaded', () => {
             showSlide(0);
             updateCount();
             refreshLiveAds();
-        };
+            setInterval(() => showSlide(currentSlide + 1), interval);
+        });
     </script>
 </body>
 </html>
