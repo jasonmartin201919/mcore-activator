@@ -3,194 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCORE Team - 官方发布中心</title>
+    <title>MCORE | 官方发布中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 腾讯官网风格核心变量 */
+        /* 引入自定义字体 */
+        @font-face {
+            font-family: 'FontquanXinYiGuanHeiTi';
+            src: url('https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/FontquanXinYiGuanHeiTi-Regular.ttf');
+            font-display: swap;
+        }
+
         :root { 
-            --tencent-blue: #0052D9; 
-            --bg-dark: #000000;
-            --text-main: #FFFFFF;
-            --text-gray: #888888;
+            --bg-main: #F8F9FA;
+            --text-dark: #1A1A1A;
         }
         
         body { 
-            background-color: var(--bg-dark); 
-            color: var(--text-main); 
-            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main); 
+            color: var(--text-dark); 
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
             -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 0;
         }
 
-        /* 极简卡片风格 */
-        .tencent-card {
-            background: #111111;
-            border: 1px solid #222222;
-            transition: all 0.3s ease;
-        }
-        .tencent-card:hover {
-            border-color: var(--tencent-blue);
-            background: #161616;
+        /* LOGO 区域：固定 200px 高度 */
+        .header-logo-area {
+            height: 200px;
+            width: 100%;
+            background-color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;    
+            justify-content: center; 
+            border-bottom: 1px solid #EEEEEE;
         }
 
-        /* 腾讯风格数字：大、白、重 */
-        .stat-number {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            font-weight: 700;
+        .mcore-brand-font {
+            font-family: 'FontquanXinYiGuanHeiTi', sans-serif;
+            font-size: 1.75rem; 
+            font-weight: 900;    
+            letter-spacing: 0.1em;
+            color: #000;
+            margin-top: 12px;
             line-height: 1;
         }
 
-        /* 按钮：纯色扁平化 */
-        .btn-primary {
-            background-color: var(--tencent-blue);
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #0045B5;
+        /* 1. 沉浸式业务展示区：高度调整为固定 500px */
+        .hero-slider {
+            position: relative;
+            height: 500px; 
+            width: 100%;
+            overflow: hidden;
+            background: #FFFFFF;
+            border-bottom: 1px solid #EEEEEE;
         }
 
-        /* 动画 */
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .slide.active { opacity: 1; }
+        .slide-h1 { font-size: 3.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1rem; color: #000; }
+        .slide-p { font-size: 1rem; letter-spacing: 0.2em; color: #666; font-weight: 300; }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+        }
+        .dot { width: 40px; height: 2px; background: rgba(0,0,0,0.05); position: relative; }
+        .dot-fill { position: absolute; left:0; top:0; height:100%; width:0; background: var(--text-dark); }
+        .dot.active .dot-fill { width: 100%; transition: width 5000ms linear; }
+
+        /* 2. 下载与社区区 */
+        .content-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+
+        .download-btn {
+            background: var(--text-dark);
+            color: white;
+            padding: 20px 80px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+        }
+        .download-btn:hover { background: #000; transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        .info-card {
+            background: #FFFFFF;
+            padding: 50px;
+            border: 1px solid #EAEAEA;
+        }
+
+        /* 3. 广告位 */
+        .ad-footer-container {
+            max-width: 1100px;
+            margin: 0 auto 80px auto;
+            padding: 0 40px;
+        }
+        .ad-box {
+            width: 100%;
+            min-height: 120px;
+            background: #FFF;
+            border: 1px dashed #DDD;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .reveal { animation: fadeInUp 0.8s cubic-bezier(0.2, 1, 0.3, 1) forwards; }
+        .reveal { animation: fadeInUp 1s ease-out forwards; }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
 
-    <nav class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center border-b border-white/5">
-        <div class="text-2xl font-bold tracking-tighter">MCORE <span class="text-xs font-normal text-gray-500 ml-2">Team</span></div>
-        <div class="hidden md:flex space-x-10 text-sm font-medium text-gray-400">
-            <a href="#" class="hover:text-white">首页</a>
-            <a href="#" class="hover:text-white">关于我们</a>
-            <a href="#" class="hover:text-white">加入我们</a>
+    <header class="header-logo-area">
+        <div class="flex flex-col items-center">
+            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" 
+                 alt="MCORE Logo" 
+                 class="h-16 w-auto object-contain pointer-events-none">
+            <div class="mcore-brand-font">MCORE</div>
         </div>
-    </nav>
+    </header>
 
-    <main class="max-w-7xl mx-auto px-8 pt-20 pb-32">
-        
-        <div class="mb-24 reveal">
-            <div class="w-full h-20 bg-[#111] border border-white/5 rounded flex items-center justify-center">
-                <p class="text-[10px] text-gray-600 tracking-widest uppercase">Advertisement Platform Content</p>
-            </div>
+    <section class="hero-slider">
+        <div class="slide active">
+            <h1 class="slide-h1">纯粹 · 高效</h1>
+            <div class="slide-p">重新定义 PC 端资产清理逻辑</div>
+        </div>
+        <div class="slide">
+            <h1 class="slide-h1">毫秒级比对</h1>
+            <div class="slide-p">智能视觉算法识别重复图像</div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-20 items-center">
-            
-            <div class="space-y-12 reveal" style="animation-delay: 0.1s;">
+        <div class="slider-dots">
+            <div class="dot active"><div class="dot-fill"></div></div>
+            <div class="dot"><div class="dot-fill"></div></div>
+        </div>
+    </section>
+
+    <main class="content-section">
+        <div class="grid md:grid-cols-2 gap-16 items-start">
+            <div class="space-y-16 reveal">
                 <div class="space-y-6">
-                    <h2 class="text-indigo-500 font-bold tracking-widest text-sm uppercase">Innovation & Efficiency</h2>
-                    <h1 class="text-6xl md:text-8xl font-bold tracking-tight leading-tight">MCORE<br>查重引擎</h1>
-                    <p class="text-gray-500 text-lg max-w-md leading-relaxed">
-                        利用先进的 AI 视觉算法，重新定义 PC 端图片查重效率。
-                        免安装，即开即用，为每一份数字资产释放空间。
-                    </p>
-                </div>
-
-                <div class="flex gap-16">
-                    <div>
-                        <div id="downloadCount" class="stat-number text-5xl mb-2">158,420</div>
-                        <div class="text-xs text-gray-600 uppercase tracking-widest font-medium">累计下载量</div>
-                    </div>
-                    <div>
-                        <div class="stat-number text-5xl mb-2 italic">99.8%</div>
-                        <div class="text-xs text-gray-600 uppercase tracking-widest font-medium">识别准确率</div>
+                    <h2 class="text-[10px] font-bold tracking-[0.5em] text-gray-400 uppercase">System Status</h2>
+                    <div class="flex gap-20">
+                        <div>
+                            <div id="downloadCount" class="text-6xl font-light tracking-tighter">5,280</div>
+                            <div class="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-3">累计下载次数</div>
+                        </div>
+                        <div>
+                            <div class="text-6xl font-light tracking-tighter">99.8%</div>
+                            <div class="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-3">处理完成率</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-6">
-                    <a href="你的下载链接" class="btn-primary px-12 py-4 rounded-none font-bold text-sm tracking-widest active:scale-95 transition-all">
-                        立即下载
-                    </a>
-                    <div class="text-xs text-gray-500">
-                        <span class="text-white font-bold">V2.0.1</span> Stable Edition
-                    </div>
+                <div class="pt-10">
+                    <a href="你的下载链接" class="download-btn inline-block text-center">立即获取 MCORE</a>
+                    <p class="text-[10px] text-gray-400 mt-8 tracking-[0.2em]">稳定版本 v2.0.1 | 适用于 Windows 10/11</p>
                 </div>
             </div>
 
-            <div class="reveal" style="animation-delay: 0.3s;">
-                <div class="tencent-card p-12 rounded-none space-y-8">
-                    <div class="flex items-start justify-between">
-                        <div class="space-y-2">
-                            <h3 class="text-2xl font-bold">微信公众号</h3>
-                            <p class="text-gray-500 text-sm">关注我们，获取最新的技术动态与版本推送。</p>
-                        </div>
-                        <div class="w-10 h-10 border border-indigo-500/50 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            <div class="info-card reveal" style="animation-delay: 0.2s;">
+                <div class="text-center space-y-8">
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-[0.4em] text-gray-400">Join Community</h3>
+                        <p class="text-sm font-medium">关注微信公众号获取技术支持</p>
+                    </div>
+                    <div class="p-4 inline-block bg-[#FBFBFB] border border-gray-100">
+                        <div class="w-44 h-44 bg-white flex items-center justify-center overflow-hidden">
+                            <img src="your-qrcode.png" alt="QR" class="w-full h-full object-cover">
                         </div>
                     </div>
-
-                    <div class="bg-white p-3 inline-block">
-                        <div class="w-44 h-44 bg-gray-100 flex items-center justify-center">
-                            <img src="your-qrcode.png" alt="微信二维码" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-
-                    <div class="pt-6 border-t border-white/5 space-y-4">
-                        <div class="flex items-center justify-between text-xs tracking-widest">
-                            <span class="text-gray-500">微信号</span>
-                            <span class="text-white font-bold">您的公众号名</span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs tracking-widest">
-                            <span class="text-gray-500">获取密钥</span>
-                            <span class="text-indigo-500 font-bold">私信回复 "MCORE"</span>
-                        </div>
+                    <div class="text-[11px] font-bold text-gray-400 tracking-widest">
+                        搜索公众号：<span class="text-black">您的公众号名</span>
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
 
-    <footer class="max-w-7xl mx-auto px-8 py-16 border-t border-white/5">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div class="text-[10px] text-gray-600 tracking-[0.3em] uppercase">
-                &copy; 2026 MCORE TEAM. ALL RIGHTS RESERVED.
-            </div>
-            <div class="flex space-x-8 text-[10px] text-gray-600 tracking-widest uppercase font-bold">
-                <a href="#" class="hover:text-white">服务协议</a>
-                <a href="#" class="hover:text-white">隐私政策</a>
-                <a href="#" class="hover:text-white">法律声明</a>
-            </div>
+    <section class="ad-footer-container reveal" style="animation-delay: 0.4s;">
+        <div class="ad-box">
+            <span class="text-[9px] uppercase tracking-[0.4em] text-gray-300 mb-4">Promoted Content</span>
+            <div class="text-gray-400 text-xs italic">此处投放广告内容</div>
         </div>
+    </section>
+
+    <footer class="py-20 text-center border-t border-gray-100 bg-white">
+        <div class="flex flex-col items-center mb-4 opacity-40">
+            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" 
+                 alt="MCORE Logo" class="h-8 w-auto">
+            <div class="mcore-brand-font" style="font-size: 1rem; margin-top: 5px;">MCORE</div>
+        </div>
+        <div class="text-[10px] text-gray-400 tracking-[0.6em] uppercase font-medium">MCORE TEAM &copy; 2026</div>
     </footer>
 
     <script>
-        // 高级数字滚动逻辑
-        function animateCounter(id, target, start) {
-            const el = document.getElementById(id);
-            let current = start;
-            const duration = 2000; 
-            const frameRate = 1000 / 60;
-            const totalFrames = Math.round(duration / frameRate);
-            const increment = (target - start) / totalFrames;
-            let frame = 0;
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        const interval = 5000;
 
-            const timer = setInterval(() => {
-                frame++;
-                current += increment;
-                el.innerText = Math.floor(current).toLocaleString();
-                if (frame === totalFrames) {
-                    clearInterval(timer);
-                    el.innerText = target.toLocaleString();
-                    startAutoUpdate(id, target);
-                }
-            }, frameRate);
+        function showSlide(n) {
+            slides.forEach(s => s.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+            
+            const fill = dots[currentSlide].querySelector('.dot-fill');
+            if (fill) {
+                fill.style.transition = 'none';
+                fill.style.width = '0';
+                setTimeout(() => {
+                    fill.style.transition = `width ${interval}ms linear`;
+                    fill.style.width = '100%';
+                }, 50);
+            }
         }
 
-        function startAutoUpdate(id, currentVal) {
-            const el = document.getElementById(id);
-            let val = currentVal;
-            setInterval(() => {
-                val += Math.floor(Math.random() * 2) + 1;
-                el.innerText = val.toLocaleString();
-            }, 5000);
-        }
+        setInterval(() => showSlide(currentSlide + 1), interval);
+        window.onload = () => showSlide(0);
 
-        window.onload = () => {
-            // 腾讯式的缓慢进入感
-            animateCounter("downloadCount", 158420, 158000);
-        };
+        let baseCount = 5280;
+        function updateCount() {
+            baseCount += Math.floor(Math.random() * 3) + 1;
+            const el = document.getElementById('downloadCount');
+            if(el) el.innerText = baseCount.toLocaleString();
+            setTimeout(updateCount, 3000); 
+        }
+        updateCount();
     </script>
 </body>
 </html>
