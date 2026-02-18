@@ -1,10 +1,12 @@
 {
   "ads": {
-    "carousel_a_title": "纯粹 · 高效",
-    "carousel_a_subtitle": "重新定义 PC 端资产清理逻辑",
-    "carousel_b_title": "毫秒级比对",
-    "carousel_b_subtitle": "智能视觉算法识别重复图像",
-    "footer_ad_text": "此处投放广告内容",
-    "download_url": "你的下载链接"
+    "carousel_a_title": "测试",
+    "carousel_a_subtitle": "éæ°å®ä¹ PC ç«¯èµäº§æ¸çé»è¾",
+    "carousel_b_title": "æ¯«ç§çº§æ¯å¯¹",
+    "carousel_b_subtitle": "æºè½è§è§ç®æ³è¯å«éå¤å¾å",
+    "footer_ad_text": "æ­¤å¤ææ¾å¹¿ååå®¹",
+    "exe_popup_url": "",
+    "exe_sidebar_text": "",
+    "download_url": "https://github.com/jasonmartin201919/mcore-activator/releases"
   }
 }
