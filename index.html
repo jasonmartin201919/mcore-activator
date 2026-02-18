@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCORE | 官方发布中心</title>
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
     <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 引入自定义字体 */
         @font-face {
             font-family: 'FontquanXinYiGuanHeiTi';
             src: url('https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/FontquanXinYiGuanHeiTi-Regular.ttf');
@@ -24,157 +24,98 @@
             color: var(--text-dark); 
             font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
             -webkit-font-smoothing: antialiased;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
         }
 
         /* LOGO 区域 */
         .header-logo-area {
-            height: 200px;
-            width: 100%;
+            height: 200px; width: 100%;
             background-color: #FFFFFF;
-            display: flex;
-            flex-direction: column;
-            align-items: center;    
-            justify-content: center; 
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; 
             border-bottom: 1px solid #EEEEEE;
         }
 
         .mcore-brand-font {
             font-family: 'FontquanXinYiGuanHeiTi', sans-serif;
-            font-size: 1.75rem; 
-            font-weight: 900;    
-            letter-spacing: 0.1em;
-            color: #000;
-            margin-top: 12px;
-            line-height: 1;
+            font-size: 1.75rem; font-weight: 900;    
+            letter-spacing: 0.1em; color: #000;
+            margin-top: 12px; line-height: 1;
         }
 
-        /* 1. 沉浸式业务展示区 */
+        /* 1. 沉浸式业务展示区 - 关键优化 */
         .hero-slider {
-            position: relative;
-            height: 500px; 
-            width: 100%;
-            overflow: hidden;
-            background: #F3F4F6; /* 默认浅灰色背景，提升首屏速度 */
+            position: relative; height: 500px; width: 100%;
+            overflow: hidden; background: #F3F4F6;
             border-bottom: 1px solid #EEEEEE;
         }
 
         .slide {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            transition: opacity 0.8s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 10;
+            position: absolute; inset: 0; opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; z-index: 10;
         }
 
         .slide-media {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            opacity: 0; /* 初始透明，加载后淡入 */
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; opacity: 0; 
             transition: opacity 0.5s ease;
         }
 
         .slide.active { opacity: 1; }
         
-        /* 默认文字为黑色，背景图加载成功后由 JS 动态切换为白色 */
+        /* 默认黑字，适应浅色背景 */
         .slide-content { 
-            position: relative; 
-            z-index: 20; 
-            color: #1A1A1A; 
-            transition: color 0.4s ease, text-shadow 0.4s ease;
+            position: relative; z-index: 20; color: #1A1A1A; 
+            transition: all 0.4s ease;
         }
         
-        /* 当有媒体背景时的样式 */
+        /* 背景图加载后切换为白字 */
         .has-media .slide-content { 
-            color: #FFFFFF; 
-            text-shadow: 0 2px 15px rgba(0,0,0,0.5); 
+            color: #FFFFFF; text-shadow: 0 2px 15px rgba(0,0,0,0.5); 
         }
 
         .slide-h1 { font-size: 3.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1rem; }
         .slide-p { font-size: 1rem; letter-spacing: 0.2em; font-weight: 300; opacity: 0.9; }
 
         .slider-dots {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 12px;
-            z-index: 30;
+            position: absolute; bottom: 30px; left: 50%;
+            transform: translateX(-50%); display: flex; gap: 12px; z-index: 30;
         }
         .dot { width: 40px; height: 2px; background: rgba(0,0,0,0.1); position: relative; }
         .dot-fill { position: absolute; left:0; top:0; height:100%; width:0; background: #000; }
         .dot.active .dot-fill { width: 100%; transition: width 5000ms linear; }
 
         /* 2. 下载与社区区 */
-        .content-section {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 80px 40px;
-        }
+        .content-section { max-width: 1100px; margin: 0 auto; padding: 80px 40px; }
 
         .download-btn {
-            background: var(--text-dark);
-            color: white;
-            padding: 20px 80px;
-            font-weight: 600;
-            letter-spacing: 0.1em;
+            background: var(--text-dark); color: white;
+            padding: 20px 80px; font-weight: 600;
+            letter-spacing: 0.1em; border-radius: 2px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 2px;
         }
         .download-btn:hover { background: #000; transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 
-        .info-card {
-            background: #FFFFFF;
-            padding: 50px;
-            border: 1px solid #EAEAEA;
-        }
+        .info-card { background: #FFFFFF; padding: 50px; border: 1px solid #EAEAEA; }
 
-        /* 3. 底部广告位 */
-        .ad-footer-container {
-            max-width: 1100px;
-            margin: 0 auto 80px auto;
-            padding: 0 40px;
-        }
+        /* 3. 底部广告联盟位 */
+        .ad-footer-container { max-width: 1100px; margin: 0 auto 80px auto; padding: 0 40px; }
         .ad-box {
-            width: 100%;
-            min-height: 120px;
-            background: #FFF;
-            border: 1px solid #EEE;
-            display: flex;
-            position: relative;
-            overflow: hidden;
-            border-radius: 4px;
-            align-items: center;
-            justify-content: center;
+            width: 100%; min-height: 120px; background: #FFF;
+            border: 1px solid #EEE; display: flex; position: relative;
+            overflow: hidden; border-radius: 4px;
+            align-items: center; justify-content: center;
         }
         .ad-media-bg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; opacity: 0; transition: opacity 0.5s ease;
         }
         .ad-overlay {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.85); 
-            border-radius: 2px;
+            position: relative; z-index: 2; text-align: center;
+            padding: 15px 30px; background: rgba(255,255,255,0.85); border-radius: 2px;
         }
 
         @keyframes fadeInUp {
@@ -189,8 +130,7 @@
     <header class="header-logo-area">
         <div class="flex flex-col items-center">
             <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" 
-                 alt="MCORE Logo" 
-                 class="h-16 w-auto object-contain pointer-events-none">
+                 alt="MCORE Logo" class="h-16 w-auto pointer-events-none">
             <div class="mcore-brand-font">MCORE</div>
         </div>
     </header>
@@ -210,7 +150,6 @@
                 <div class="slide-p">智能视觉算法识别重复图像</div>
             </div>
         </div>
-
         <div class="slider-dots">
             <div class="dot active"><div class="dot-fill"></div></div>
             <div class="dot"><div class="dot-fill"></div></div>
@@ -233,9 +172,8 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="pt-10">
-                    <a id="mainDownloadBtn" href="https://github.com/jasonmartin201919/mcore-activator/releases" class="download-btn inline-block text-center">立即获取 MCORE</a>
+                    <a id="mainDownloadBtn" href="#" class="download-btn inline-block text-center">立即获取 MCORE</a>
                     <p class="text-[10px] text-gray-400 mt-8 tracking-[0.2em]">稳定版本 v2.0.1 | 适用于 Windows 10/11</p>
                 </div>
             </div>
@@ -251,9 +189,7 @@
                             <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/assets/qrcode.png?raw=true" alt="QR" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/176?text=MCORE+QR'">
                         </div>
                     </div>
-                    <div class="text-[11px] font-bold text-gray-400 tracking-widest">
-                        搜索公众号：<span class="text-black">MCORE 科技</span>
-                    </div>
+                    <div class="text-[11px] font-bold text-gray-400 tracking-widest">搜索公众号：<span class="text-black">MCORE 科技</span></div>
                 </div>
             </div>
         </div>
@@ -263,60 +199,52 @@
         <div class="ad-box" id="footerAdBox">
             <div class="media-container w-full h-full absolute inset-0"></div>
             <div class="ad-overlay">
-                <span class="text-[9px] uppercase tracking-[0.4em] text-gray-400 mb-2 block">Promoted Content</span>
-                <div id="footerAdText" class="text-gray-900 text-sm font-bold tracking-widest">MCORE: 专注视觉资产清理</div>
+                <span class="text-[9px] uppercase tracking-[0.4em] text-gray-400 mb-2 block">AD Alliance</span>
+                <div id="footerAdText" class="text-gray-900 text-sm font-bold tracking-widest">广告位火热招商中</div>
             </div>
         </div>
     </section>
 
     <footer class="py-20 text-center border-t border-gray-100 bg-white">
         <div class="flex flex-col items-center mb-4 opacity-40">
-            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" 
-                 alt="MCORE Logo" class="h-8 w-auto">
+            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-8 w-auto">
             <div class="mcore-brand-font" style="font-size: 1rem; margin-top: 5px;">MCORE</div>
         </div>
         <div class="text-[10px] text-gray-400 tracking-[0.6em] uppercase font-medium">MCORE TEAM &copy; 2026</div>
     </footer>
 
     <script>
+        // 配置 GitHub 远程备用地址（如果本地 config.json 加载失败）
         const REMOTE_CONFIG = 'https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json';
 
-        // --- 核心逻辑：媒体渲染器（优化加载） ---
+        // --- 核心：媒体渲染逻辑（淡入效果） ---
         function renderMedia(container, url) {
-            if (!url || url.trim() === "" || url === "#") {
-                container.parentElement.classList.remove('has-media');
-                return;
-            }
+            if (!url || url.trim() === "" || url === "#") return;
             container.innerHTML = "";
             const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
             
             if (isVideo) {
                 const video = document.createElement('video');
-                video.src = url;
-                video.autoplay = true;
-                video.loop = true;
-                video.muted = true;
-                video.playsInline = true;
-                video.className = container.parentElement.className.includes('ad-box') ? "ad-media-bg" : "slide-media";
+                video.src = url; video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
+                video.className = container.parentElement.classList.contains('ad-box') ? "ad-media-bg" : "slide-media";
                 video.oncanplay = () => {
-                    video.style.opacity = "0.8";
+                    video.style.opacity = "0.7"; // 增加对比度
                     container.parentElement.classList.add('has-media');
                 };
                 container.appendChild(video);
             } else {
                 const img = new Image();
                 img.src = url;
-                img.className = container.parentElement.className.includes('ad-box') ? "ad-media-bg" : "slide-media";
+                img.className = container.parentElement.classList.contains('ad-box') ? "ad-media-bg" : "slide-media";
                 img.onload = () => {
-                    img.style.opacity = "0.8";
+                    img.style.opacity = "0.6"; // 图片背景稍暗一点，突出文字
                     container.parentElement.classList.add('has-media');
                 };
-                img.onerror = () => container.parentElement.classList.remove('has-media');
                 container.appendChild(img);
             }
         }
 
-        // --- 1. 轮播图逻辑 ---
+        // --- 1. 轮播控制器 ---
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('.dot');
@@ -340,69 +268,65 @@
             }
         }
 
-        // --- 2. 下载量跳动 ---
-        let baseCount = 5280;
-        function updateCount() {
-            baseCount += Math.floor(Math.random() * 3) + 1;
-            const el = document.getElementById('downloadCount');
-            if(el) el.innerText = baseCount.toLocaleString();
-            setTimeout(updateCount, 3000); 
-        }
+        // --- 2. 动态加载广告联盟配置 ---
+        async function loadAllianceConfig() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5秒超时
 
-        // --- 3. 动态配置加载（优化速度） ---
-        async function refreshLiveAds() {
-            let configUrl = 'config.json';
-            const fetchConfig = async (url) => {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超时切换
-                try {
-                    const res = await fetch(url + '?t=' + Date.now(), { signal: controller.signal });
-                    if (!res.ok) throw new Error();
-                    return await res.json();
-                } finally {
-                    clearTimeout(timeoutId);
-                }
-            };
+            async function tryFetch(url) {
+                const res = await fetch(url + '?nocache=' + Date.now(), { signal: controller.signal });
+                if (!res.ok) throw new Error();
+                return await res.json();
+            }
 
             try {
                 let data;
                 try {
-                    data = await fetchConfig(configUrl);
+                    data = await tryFetch('config.json'); // 首先尝试本地
                 } catch (e) {
-                    console.warn("本地读取失败，切换远程...");
-                    data = await fetchConfig(REMOTE_CONFIG);
+                    data = await tryFetch(REMOTE_CONFIG); // 失败则请求 GitHub
                 }
 
                 if (data && data.ads) {
                     const ads = data.ads;
-                    // 轮播内容更新
+                    // 更新轮播 A
                     const s0 = document.getElementById('slide0');
-                    if (ads.carousel_a_title) s0.querySelector('.slide-h1').innerText = ads.carousel_a_title;
-                    if (ads.carousel_a_subtitle) s0.querySelector('.slide-p').innerText = ads.carousel_a_subtitle;
+                    if(ads.carousel_a_title) s0.querySelector('.slide-h1').innerText = ads.carousel_a_title;
+                    if(ads.carousel_a_subtitle) s0.querySelector('.slide-p').innerText = ads.carousel_a_subtitle;
                     renderMedia(s0.querySelector('.media-container'), ads.carousel_a_media);
 
+                    // 更新轮播 B
                     const s1 = document.getElementById('slide1');
-                    if (ads.carousel_b_title) s1.querySelector('.slide-h1').innerText = ads.carousel_b_title;
-                    if (ads.carousel_b_subtitle) s1.querySelector('.slide-p').innerText = ads.carousel_b_subtitle;
+                    if(ads.carousel_b_title) s1.querySelector('.slide-h1').innerText = ads.carousel_b_title;
+                    if(ads.carousel_b_subtitle) s1.querySelector('.slide-p').innerText = ads.carousel_b_subtitle;
                     renderMedia(s1.querySelector('.media-container'), ads.carousel_b_media);
 
-                    // 底部广告更新
-                    if (ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
+                    // 更新底部广告
+                    if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
                     renderMedia(document.getElementById('footerAdBox').querySelector('.media-container'), ads.footer_ad_media);
 
-                    // 下载链接
-                    if (ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
+                    // 更新下载链接
+                    if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 }
-            } catch (e) {
-                console.error("配置加载超时或失败");
+            } catch (err) {
+                console.log("Alliance config failed or timeout, using default.");
+            } finally {
+                clearTimeout(timeoutId);
             }
         }
 
-        // 初始化任务队列
+        // --- 3. 初始化 ---
         document.addEventListener('DOMContentLoaded', () => {
             showSlide(0);
-            updateCount();
-            refreshLiveAds();
+            loadAllianceConfig();
+            // 每 3 秒跳动一次下载量
+            setInterval(() => {
+                const el = document.getElementById('downloadCount');
+                let count = parseInt(el.innerText.replace(/,/g, ''));
+                count += Math.floor(Math.random() * 3) + 1;
+                el.innerText = count.toLocaleString();
+            }, 3000);
+            // 开启轮播计时
             setInterval(() => showSlide(currentSlide + 1), interval);
         });
     </script>
