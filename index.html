@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCORE | 官方发布中心 - 高效资产清理专家</title>
-    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @font-face {
@@ -12,125 +11,88 @@
             src: url('https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/FontquanXinYiGuanHeiTi-Regular.ttf');
             font-display: swap;
         }
-
         :root { --bg-main: #F8F9FA; --text-dark: #1A1A1A; --mcore-blue: #2563eb; }
+        body { background-color: var(--bg-main); color: var(--text-dark); font-family: "PingFang SC", sans-serif; -webkit-font-smoothing: antialiased; }
         
-        body { 
-            background-color: var(--bg-main); color: var(--text-dark); 
-            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-            -webkit-font-smoothing: antialiased; margin: 0; padding: 0;
-        }
+        /* 品牌字体 */
+        .mcore-brand-font { font-family: 'FontquanXinYiGuanHeiTi', sans-serif; font-size: 1.75rem; font-weight: 900; letter-spacing: 0.1em; }
 
-        /* 加载占位符动画 */
-        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
-        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        .header-logo-area { height: 180px; width: 100%; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #EEEEEE; }
-        .mcore-brand-font { font-family: 'FontquanXinYiGuanHeiTi', sans-serif; font-size: 1.75rem; font-weight: 900; letter-spacing: 0.1em; color: #000; margin-top: 12px; }
-
-        /* 轮播区 */
-        .hero-slider { position: relative; height: 500px; width: 100%; overflow: hidden; background: #111; border-bottom: 1px solid #EEEEEE; }
-        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease-in-out; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
-        .slide-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
+        /* 轮播样式 */
+        .hero-slider { position: relative; height: 500px; background: #111; overflow: hidden; }
+        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
         .slide.active { opacity: 1; }
-        .slide-content { position: relative; z-index: 20; color: #FFFFFF; text-shadow: 0 2px 20px rgba(0,0,0,0.8); }
-        .slide-h1 { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 700; margin-bottom: 1rem; }
-
-        /* 导航点 */
-        .slider-dots { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 30; }
-        .dot { width: 30px; height: 3px; background: rgba(255,255,255,0.3); cursor: pointer; }
-        .dot.active { background: #FFFFFF; }
-
-        /* 内容板块 */
-        .content-section { max-width: 1200px; margin: 0 auto; padding: 60px 24px; }
-        .download-btn { background: #000; color: white; padding: 18px 60px; font-weight: 600; border-radius: 4px; transition: all 0.3s ease; }
-        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-
-        /* 内容发布区样式 */
-        .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: all 0.3s; }
-        .news-card:hover { border-color: var(--mcore-blue); }
-
-        /* 底部合规区域 */
-        .footer-links a { color: #9CA3AF; transition: color 0.2s; }
-        .footer-links a:hover { color: #111; }
-
+        .slide-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
+        
+        /* 新闻卡片 */
+        .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
+        .news-card:hover { border-color: var(--mcore-blue); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        
         .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
+        .skeleton { background: #eee; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <header class="header-logo-area">
-        <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="MCORE Logo" class="h-14 w-auto">
-        <div class="mcore-brand-font">MCORE</div>
+    <header class="h-[180px] bg-white flex flex-col items-center justify-center border-b">
+        <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-14 w-auto">
+        <div class="mcore-brand-font mt-3">MCORE</div>
     </header>
 
     <section class="hero-slider" id="heroSlider">
-        <div class="slide active" id="slide0">
-            <div class="media-container w-full h-full absolute inset-0 bg-black"></div>
-            <div class="slide-content">
-                <h1 class="slide-h1">纯粹 · 高效</h1>
-                <p class="text-lg tracking-[0.3em] font-light">重新定义 PC 端资产清理逻辑</p>
+        <div class="slide active">
+            <div class="media-container absolute inset-0 bg-black"></div>
+            <div class="relative z-20 text-white">
+                <h1 id="title_0" class="text-5xl font-bold mb-4">纯粹 · 高效</h1>
+                <p id="sub_0" class="text-lg tracking-[0.3em] font-light">重新定义 PC 端资产清理逻辑</p>
             </div>
         </div>
-        <div class="slide" id="slide1">
-            <div class="media-container w-full h-full absolute inset-0 bg-black"></div>
-            <div class="slide-content">
-                <h1 class="slide-h1">毫秒级比对</h1>
-                <p class="text-lg tracking-[0.3em] font-light">智能视觉算法识别重复图像</p>
+        <div class="slide">
+            <div class="media-container absolute inset-0 bg-black"></div>
+            <div class="relative z-20 text-white">
+                <h1 id="title_1" class="text-5xl font-bold mb-4">毫秒级比对</h1>
+                <p id="sub_1" class="text-lg tracking-[0.3em] font-light">智能视觉算法识别重复图像</p>
             </div>
-        </div>
-        <div class="slider-dots" id="sliderDots">
-            <div class="dot active"></div>
-            <div class="dot"></div>
         </div>
     </section>
 
-    <main class="content-section">
-        <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
-            <div class="reveal">
+    <main class="max-w-6xl mx-auto px-6 py-20">
+        <div class="grid md:grid-cols-2 gap-12 mb-24 reveal">
+            <div>
                 <h2 class="text-[10px] font-black tracking-[0.5em] text-blue-600 uppercase mb-4">Core Technology</h2>
-                <h3 class="text-4xl font-bold mb-6 italic">让每一张图片都有迹可循</h3>
+                <h3 class="text-4xl font-bold mb-8 italic">让每一张图片都有迹可循</h3>
                 <div class="flex gap-12 mb-10">
                     <div>
-                        <div id="downloadCount" class="text-5xl font-bold tracking-tighter">0</div>
-                        <p class="text-xs text-gray-400 font-bold mt-2 uppercase">Global Downloads</p>
+                        <div id="downloadCount" class="text-5xl font-bold tracking-tighter">5,280</div>
+                        <p class="text-[10px] text-gray-400 font-bold mt-2 uppercase">Global Downloads</p>
                     </div>
                     <div>
                         <div class="text-5xl font-bold tracking-tighter text-blue-600">99.8%</div>
-                        <p class="text-xs text-gray-400 font-bold mt-2 uppercase">Accuracy Rate</p>
+                        <p class="text-[10px] text-gray-400 font-bold mt-2 uppercase">Accuracy Rate</p>
                     </div>
                 </div>
-                <a id="mainDownloadBtn" href="#" class="download-btn inline-block">GET MCORE ACTIVATOR</a>
-                <p class="text-[10px] text-gray-400 mt-6 tracking-widest">Supports Windows 10/11 x64 Architecture</p>
+                <a id="mainDownloadBtn" href="#" class="inline-block bg-black text-white px-10 py-4 font-bold rounded hover:bg-blue-700 transition">GET MCORE ACTIVATOR</a>
             </div>
-
-            <div class="bg-white p-8 border border-gray-100 shadow-sm reveal" style="transition-delay: 0.2s;">
-                <h4 class="text-sm font-bold mb-6 border-b pb-4 uppercase tracking-widest">About MCORE</h4>
-                <p class="text-gray-500 text-sm leading-relaxed mb-6">
-                    MCORE 是一款专注于工业级 PC 资产管理与清理的效率工具。通过自主研发的视觉特征比对引擎，能够从海量碎片化数据中精准提取无效资产，为企业与个人开发者释放宝贵的磁盘空间。我们坚持安全、透明、高效的开发准则。
-                </p>
+            <div class="bg-white p-8 border border-gray-100 shadow-sm">
+                <h4 class="text-xs font-bold mb-4 uppercase tracking-widest border-b pb-4">关于 MCORE</h4>
+                <p class="text-gray-500 text-sm leading-relaxed mb-6">MCORE 是一款专注于工业级 PC 资产管理与清理的效率工具。通过自主研发的视觉特征比对引擎，能够从海量碎片化数据中精准提取无效资产。我们坚持安全、透明、高效的开发准则。</p>
                 <div class="flex items-center gap-4">
-                    <div class="w-20 h-20 bg-gray-50 flex items-center justify-center p-2 border">
-                        <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/assets/qrcode.png?raw=true" alt="QR" class="w-full h-full object-contain">
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-gray-900">微信公众号：MCORE 科技</p>
-                        <p class="text-[10px] text-gray-400 mt-1 uppercase">Scan for Technical Support</p>
+                    <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/assets/qrcode.png?raw=true" class="w-16 h-16 border p-1">
+                    <div class="text-[10px]">
+                        <p class="font-bold text-gray-900">微信公众号：MCORE 科技</p>
+                        <p class="text-gray-400 uppercase mt-1">Scan for technical support</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <section class="mb-24 reveal">
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-[10px] font-black tracking-[0.5em] text-gray-400 uppercase mb-2">News & Articles</h2>
-                    <h3 class="text-2xl font-bold">最新动态</h3>
-                </div>
+            <div class="flex justify-between items-end mb-10">
+                <h3 class="text-2xl font-bold">最新动态 <span class="text-blue-600 text-sm ml-2 font-mono">/ News</span></h3>
                 <div class="h-[1px] flex-1 bg-gray-100 mx-8 mb-2"></div>
             </div>
-            <div class="grid md:grid-cols-3 gap-6" id="newsContainer">
+            <div id="newsContainer" class="grid md:grid-cols-3 gap-6">
                 <div class="news-card skeleton h-48"></div>
                 <div class="news-card skeleton h-48"></div>
                 <div class="news-card skeleton h-48"></div>
@@ -138,133 +100,110 @@
         </section>
 
         <section class="reveal">
-            <div id="footerAdBox" class="w-full bg-white border border-gray-100 rounded p-1 overflow-hidden relative min-h-[120px] flex items-center justify-center">
-                <div class="media-container absolute inset-0 z-0"></div>
-                <div class="relative z-10 text-center p-6 bg-white/90 backdrop-blur-sm border border-white">
+            <div id="footerAdBox" class="bg-white border rounded overflow-hidden relative min-h-[100px] flex items-center justify-center p-6">
+                <div id="footerMedia" class="absolute inset-0 z-0"></div>
+                <div class="relative z-10 text-center">
                     <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-1">Sponsored Content</span>
-                    <div id="footerAdText" class="text-sm font-medium text-gray-800">MCORE 广告位对接中</div>
+                    <div id="footerAdText" class="text-sm font-medium">MCORE 广告位对接中</div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="bg-white border-t border-gray-100 pt-20 pb-10">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <div class="flex flex-col items-center mb-8">
-                <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-8 opacity-50 mb-2">
-                <p class="text-[10px] text-gray-300 tracking-[0.8em] font-bold uppercase">MCORE TECHNOLOGY &copy; 2026</p>
-            </div>
-            
-            <div class="footer-links flex flex-wrap justify-center gap-x-8 gap-y-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                <a href="#about">About Us</a>
-                <a href="https://github.com/jasonmartin201919/mcore-activator" target="_blank">Open Source</a>
-                <a href="#privacy" onclick="alert('MCORE Privacy Policy:\nWe do not collect any personal image data. All processing is local.')">Privacy Policy</a>
-                <a href="#terms" onclick="alert('Terms of Service:\nMCORE is provided as-is for asset management purposes.')">Terms of Service</a>
-                <a href="mailto:support@mcore.sbs">Contact Support</a>
+    <footer class="bg-white border-t py-12">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" class="h-6 opacity-30 mx-auto mb-4">
+            <p class="text-[9px] text-gray-400 tracking-[0.5em] font-bold uppercase mb-8">MCORE TECHNOLOGY &copy; 2026</p>
+            <div class="flex justify-center gap-8 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <a href="#" class="hover:text-black">Privacy Policy</a>
+                <a href="#" class="hover:text-black">Terms of Service</a>
+                <a href="mailto:support@mcore.sbs" class="hover:text-black">Contact</a>
             </div>
         </div>
     </footer>
 
     <script>
-        const REPO_NAME = 'jasonmartin201919/mcore-activator';
-        const CONFIG_URL = `https://raw.githubusercontent.com/${REPO_NAME}/main/config.json`;
+        const CONFIG_URL = `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`;
 
-        // 轮播控制逻辑
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const dots = document.querySelectorAll('.dot');
-
-        function showSlide(n) {
-            slides.forEach(s => s.classList.remove('active'));
-            dots.forEach(d => d.classList.remove('active'));
-            currentSlide = (n + slides.length) % slides.length;
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
-        }
-
-        // 媒体加载函数
-        function renderMedia(container, url) {
-            if (!url || url.length < 5) return;
-            container.innerHTML = "";
-            const isVideo = /\.(mp4|webm)$/i.test(url);
-            const mediaTag = isVideo ? document.createElement('video') : new Image();
-            
-            mediaTag.src = url;
-            mediaTag.className = "slide-media";
-            if (isVideo) { mediaTag.autoplay = true; mediaTag.loop = true; mediaTag.muted = true; mediaTag.playsInline = true; }
-            
-            mediaTag.onload = mediaTag.oncanplay = () => { mediaTag.style.opacity = "0.5"; };
-            container.appendChild(mediaTag);
-        }
-
-        // 核心：加载配置与发布内容
-        async function init() {
+        // 加载并渲染
+        async function loadConfig() {
             try {
-                const response = await fetch(`${CONFIG_URL}?t=${Date.now()}`);
-                if (!response.ok) throw new Error("Config not found");
-                const data = await response.json();
-                const ads = data.ads;
-
-                // 1. 更新基础广告内容
-                if(ads.carousel_a_title) slides[0].querySelector('.slide-h1').innerText = ads.carousel_a_title;
-                if(ads.carousel_a_subtitle) slides[0].querySelector('p').innerText = ads.carousel_a_subtitle;
-                renderMedia(slides[0].querySelector('.media-container'), ads.carousel_a_media);
-
-                if(ads.carousel_b_title) slides[1].querySelector('.slide-h1').innerText = ads.carousel_b_title;
-                if(ads.carousel_b_subtitle) slides[1].querySelector('p').innerText = ads.carousel_b_subtitle;
-                renderMedia(slides[1].querySelector('.media-container'), ads.carousel_b_media);
-
-                if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
-                renderMedia(document.getElementById('footerAdBox').querySelector('.media-container'), ads.footer_ad_media);
+                const res = await fetch(`${CONFIG_URL}?t=${Date.now()}`);
+                const data = await res.json();
                 
-                if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
+                // 自动适配结构：不管是 {ads:{...}} 还是 直接就是内容
+                const ads = data.ads || data;
 
-                // 2. 更新内容发布区 (如果 config 里有 news 数组)
-                const newsContainer = document.getElementById('newsContainer');
-                if (ads.news && Array.isArray(ads.news)) {
-                    newsContainer.innerHTML = ""; // 清除骨架屏
-                    ads.news.forEach(item => {
-                        newsContainer.innerHTML += `
-                            <article class="news-card flex flex-col justify-between">
-                                <div>
-                                    <span class="text-[9px] font-bold text-blue-600 uppercase tracking-tighter">${item.date || '2026-01-01'}</span>
-                                    <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
-                                    <p class="text-xs text-gray-500 leading-relaxed line-clamp-3">${item.summary}</p>
-                                </div>
-                                <a href="${item.link || '#'}" class="text-[10px] font-bold uppercase tracking-widest mt-6 hover:text-blue-600 transition">Read More +</a>
+                // 1. 轮播更新
+                if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
+                if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
+                updateMedia(document.querySelector('#heroSlider .slide:nth-child(1) .media-container'), ads.carousel_a_media);
+
+                if(ads.carousel_b_title) document.getElementById('title_1').innerText = ads.carousel_b_title;
+                if(ads.carousel_b_subtitle) document.getElementById('sub_1').innerText = ads.carousel_b_subtitle;
+                updateMedia(document.querySelector('#heroSlider .slide:nth-child(2) .media-container'), ads.carousel_b_media);
+
+                // 2. 广告与链接
+                if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
+                if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
+                updateMedia(document.getElementById('footerMedia'), ads.footer_ad_media);
+
+                // 3. 新闻发布渲染 (核心修复)
+                const container = document.getElementById('newsContainer');
+                const news = ads.news || [];
+                
+                if (news.length > 0) {
+                    container.innerHTML = "";
+                    news.forEach(item => {
+                        container.innerHTML += `
+                            <article class="news-card">
+                                <span class="text-[9px] font-bold text-blue-600 uppercase">${item.date}</span>
+                                <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
+                                <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-3">${item.summary}</p>
+                                <a href="${item.link}" class="text-[10px] font-black uppercase tracking-widest mt-auto text-black hover:text-blue-600 transition">Read More +</a>
                             </article>
                         `;
                     });
                 } else {
-                    // 如果没配置新闻，显示默认占位内容防止页面难看
-                    newsContainer.innerHTML = `<p class="text-gray-400 text-sm italic">暂无最新动态发布...</p>`;
+                    container.innerHTML = `<p class="col-span-3 text-center text-gray-400 italic py-10">暂无最新动态发布</p>`;
                 }
 
-            } catch (error) {
-                console.error("Init Error:", error);
+            } catch (e) {
+                console.error("加载失败:", e);
+                document.getElementById('newsContainer').innerHTML = `<p class="col-span-3 text-center text-red-400">配置加载失败，请检查网络</p>`;
             }
         }
 
-        // 滚动显示动画
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('visible');
-            });
-        }, { threshold: 0.1 });
+        function updateMedia(container, url) {
+            if(!url || url.length < 5) return;
+            container.innerHTML = "";
+            const isVideo = /\.(mp4|webm)$/i.test(url);
+            const el = isVideo ? document.createElement('video') : new Image();
+            el.src = url;
+            el.className = "w-full h-full object-cover opacity-50";
+            if(isVideo) { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
+            container.appendChild(el);
+        }
 
+        // 轮播逻辑
+        let slideIdx = 0;
+        function rotateSlides() {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(s => s.classList.remove('active'));
+            slideIdx = (slideIdx + 1) % slides.length;
+            slides[slideIdx].classList.add('active');
+        }
+
+        // 初始化
         window.onload = () => {
-            init();
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            loadConfig();
+            setInterval(rotateSlides, 5000);
             
-            // 自动轮播
-            setInterval(() => showSlide(currentSlide + 1), 5000);
-
-            // 数字滚动动画
-            let count = 5280;
-            setInterval(() => {
-                count += Math.floor(Math.random() * 2);
-                document.getElementById('downloadCount').innerText = count.toLocaleString();
-            }, 3000);
+            // 滚动显示
+            const obs = new IntersectionObserver(ents => {
+                ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+            }, {threshold: 0.1});
+            document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         };
     </script>
 </body>
