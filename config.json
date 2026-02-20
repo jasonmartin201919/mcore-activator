@@ -21,6 +21,12 @@
     "news": [
       {
         "date": "2026-02-20",
+        "title": "新动态",
+        "summary": "动态描述",
+        "link": "#"
+      },
+      {
+        "date": "2026-02-20",
         "title": "MCORE",
         "summary": "专业高效",
         "link": "#"
