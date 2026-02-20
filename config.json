@@ -1,15 +1,19 @@
 {
   "ads": {
+    "global_ad_mode": true,
     "carousel_a_title": "测试",
     "carousel_a_subtitle": "MCORE专业服务",
-    "carousel_a_media": "https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/1771436443741_Gemini_Generated_Image_ics67eics67eics6.png",
+    "carousel_a_media": "",
     "carousel_b_title": "MCORE",
     "carousel_b_subtitle": "专业图片查重软件",
-    "carousel_b_media": "https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/1771436871853_Gemini_Generated_Image_t5vdtlt5vdtlt5vd.png",
+    "carousel_b_media": "",
     "footer_ad_text": "MCORE",
-    "footer_ad_media": "https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/1771436916362_Gemini_Generated_Image_ics67eics67eics6.png",
-    "exe_popup_url": "",
+    "footer_ad_media": "",
+    "exe_ad_url": "https://mcore.sbs/app-board",
+    "exe_ad_duration": 10,
     "exe_sidebar_text": "",
+    "exe_sidebar_link": "",
+    "exe_popup_url": "",
     "download_url": "https://github.com/jasonmartin201919/mcore-activator/releases"
   }
 }
