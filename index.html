@@ -14,19 +14,43 @@
         :root { --bg-main: #F8F9FA; --text-dark: #1A1A1A; --mcore-blue: #2563eb; }
         body { background-color: var(--bg-main); color: var(--text-dark); font-family: "PingFang SC", sans-serif; -webkit-font-smoothing: antialiased; }
         .mcore-brand-font { font-family: 'FontquanXinYiGuanHeiTi', sans-serif; font-size: 1.75rem; font-weight: 900; letter-spacing: 0.1em; }
+        
+        /* 轮播样式 */
         .hero-slider { position: relative; height: 500px; background: #111; overflow: hidden; }
         .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
         .slide.active { opacity: 1; }
-        .slide-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
-        .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
+        
+        /* 新闻卡片 */
+        .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: 0.3s; height: 100%; display: flex; flex-direction: column; cursor: pointer; }
         .news-card:hover { border-color: var(--mcore-blue); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        
         .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
+        
+        /* 详情弹窗样式 */
+        #newsModal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); overflow-y: auto; }
+        #newsModal.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .skeleton { background: #eee; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
+
+    <div id="newsModal">
+        <div class="max-w-3xl mx-auto px-6 py-20">
+            <button onclick="closeModal()" class="fixed top-10 right-10 group flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
+                <span class="group-hover:rotate-90 transition-transform duration-300">✕</span> Close
+            </button>
+            <div id="modalDate" class="text-blue-600 font-mono text-sm mb-4"></div>
+            <h2 id="modalTitle" class="text-4xl font-bold mb-10 leading-tight"></h2>
+            <div id="modalContent" class="text-gray-600 leading-loose text-lg space-y-6"></div>
+            <div class="mt-20 pt-10 border-t border-gray-100">
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest">MCORE TECHNOLOGY / Official Release</p>
+            </div>
+        </div>
+    </div>
 
     <header class="h-[180px] bg-white flex flex-col items-center justify-center border-b">
         <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-14 w-auto">
@@ -85,7 +109,7 @@
                 <h3 class="text-2xl font-bold">最新动态 <span class="text-blue-600 text-sm ml-2 font-mono">/ News</span></h3>
                 <div class="h-[1px] flex-1 bg-gray-100 mx-8 mb-2"></div>
             </div>
-            <div id="newsContainer" class="grid md:grid-cols-3 gap-6">
+            <div id="newsContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="news-card skeleton h-48"></div>
                 <div class="news-card skeleton h-48"></div>
                 <div class="news-card skeleton h-48"></div>
@@ -118,6 +142,7 @@
 
     <script>
         const CONFIG_URL = `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`;
+        let globalNewsData = [];
 
         async function loadConfig() {
             try {
@@ -125,6 +150,7 @@
                 const data = await res.json();
                 const ads = data.ads || data;
 
+                // 1. 轮播更新
                 if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
                 if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
                 updateMedia(document.querySelector('#heroSlider .slide:nth-child(1) .media-container'), ads.carousel_a_media);
@@ -133,28 +159,26 @@
                 if(ads.carousel_b_subtitle) document.getElementById('sub_1').innerText = ads.carousel_b_subtitle;
                 updateMedia(document.querySelector('#heroSlider .slide:nth-child(2) .media-container'), ads.carousel_b_media);
 
+                // 2. 广告与链接
                 if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
-                
-                // 核心下载逻辑更新
-                if(ads.download_url) {
-                    const btn = document.getElementById('mainDownloadBtn');
-                    btn.href = ads.download_url;
-                }
-                
+                if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 updateMedia(document.getElementById('footerMedia'), ads.footer_ad_media);
 
+                // 3. 新闻渲染 (支持单页详情)
                 const container = document.getElementById('newsContainer');
-                const news = ads.news || [];
+                globalNewsData = ads.news || [];
                 
-                if (news.length > 0) {
+                if (globalNewsData.length > 0) {
                     container.innerHTML = "";
-                    news.forEach(item => {
+                    globalNewsData.forEach((item, index) => {
                         container.innerHTML += `
-                            <article class="news-card">
+                            <article class="news-card" onclick="openModal(${index})">
                                 <span class="text-[9px] font-bold text-blue-600 uppercase">${item.date}</span>
                                 <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
                                 <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-3">${item.summary}</p>
-                                <a href="${item.link}" class="text-[10px] font-black uppercase tracking-widest mt-auto text-black hover:text-blue-600 transition">Read More +</a>
+                                <div class="text-[10px] font-black uppercase tracking-widest mt-auto text-black group hover:text-blue-600 transition">
+                                    Read More <span class="inline-block transform group-hover:translate-x-1 transition-transform">+</span>
+                                </div>
                             </article>
                         `;
                     });
@@ -166,6 +190,28 @@
                 console.error("加载失败:", e);
                 document.getElementById('newsContainer').innerHTML = `<p class="col-span-3 text-center text-red-400">配置加载失败，请检查网络</p>`;
             }
+        }
+
+        // 打开模态框
+        function openModal(index) {
+            const item = globalNewsData[index];
+            if(!item) return;
+
+            document.getElementById('modalTitle').innerText = item.title;
+            document.getElementById('modalDate').innerText = item.date;
+            
+            // 如果 content 存在则用 content，否则用 summary，支持 \n 换行
+            const content = item.content || item.summary;
+            document.getElementById('modalContent').innerHTML = content.split('\n').map(p => `<p>${p}</p>`).join('');
+            
+            document.getElementById('newsModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 禁止背景滚动
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('newsModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
 
         function updateMedia(container, url) {
@@ -191,11 +237,17 @@
         window.onload = () => {
             loadConfig();
             setInterval(rotateSlides, 5000);
+            
             const obs = new IntersectionObserver(ents => {
                 ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
             }, {threshold: 0.1});
             document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         };
+
+        // 按 ESC 键关闭详情
+        window.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") closeModal();
+        });
     </script>
 </body>
 </html>
