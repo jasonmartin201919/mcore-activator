@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCORE | 官方发布中心</title>
+    <title>MCORE | 官方发布中心 - 高效资产清理专家</title>
     <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
-    <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @font-face {
@@ -14,241 +13,166 @@
             font-display: swap;
         }
 
-        :root { 
-            --bg-main: #F8F9FA;
-            --text-dark: #1A1A1A;
-        }
+        :root { --bg-main: #F8F9FA; --text-dark: #1A1A1A; --mcore-blue: #2563eb; }
         
         body { 
-            background-color: var(--bg-main); 
-            color: var(--text-dark); 
+            background-color: var(--bg-main); color: var(--text-dark); 
             font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased; margin: 0; padding: 0;
         }
 
-        /* LOGO 区域 */
-        .header-logo-area {
-            height: 200px; width: 100%;
-            background-color: #FFFFFF;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; 
-            border-bottom: 1px solid #EEEEEE;
-        }
+        /* 加载占位符动画 */
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .mcore-brand-font {
-            font-family: 'FontquanXinYiGuanHeiTi', sans-serif;
-            font-size: 1.75rem; font-weight: 900;    
-            letter-spacing: 0.1em; color: #000;
-            margin-top: 12px; line-height: 1;
-        }
+        .header-logo-area { height: 180px; width: 100%; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #EEEEEE; }
+        .mcore-brand-font { font-family: 'FontquanXinYiGuanHeiTi', sans-serif; font-size: 1.75rem; font-weight: 900; letter-spacing: 0.1em; color: #000; margin-top: 12px; }
 
-        /* 1. 沉浸式业务展示区 - 关键优化 */
-        .hero-slider {
-            position: relative; height: 500px; width: 100%;
-            overflow: hidden; background: #F3F4F6;
-            border-bottom: 1px solid #EEEEEE;
-        }
-
-        .slide {
-            position: absolute; inset: 0; opacity: 0;
-            transition: opacity 0.6s ease-in-out;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center; z-index: 10;
-        }
-
-        .slide-media {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 1; opacity: 0; 
-            transition: opacity 0.5s ease;
-        }
-
+        /* 轮播区 */
+        .hero-slider { position: relative; height: 500px; width: 100%; overflow: hidden; background: #111; border-bottom: 1px solid #EEEEEE; }
+        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease-in-out; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
+        .slide-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
         .slide.active { opacity: 1; }
-        
-        /* 默认黑字，适应浅色背景 */
-        .slide-content { 
-            position: relative; z-index: 20; color: #1A1A1A; 
-            transition: all 0.4s ease;
-        }
-        
-        /* 背景图加载后切换为白字 */
-        .has-media .slide-content { 
-            color: #FFFFFF; text-shadow: 0 2px 15px rgba(0,0,0,0.5); 
-        }
+        .slide-content { position: relative; z-index: 20; color: #FFFFFF; text-shadow: 0 2px 20px rgba(0,0,0,0.8); }
+        .slide-h1 { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 700; margin-bottom: 1rem; }
 
-        .slide-h1 { font-size: 3.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 1rem; }
-        .slide-p { font-size: 1rem; letter-spacing: 0.2em; font-weight: 300; opacity: 0.9; }
+        /* 导航点 */
+        .slider-dots { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 30; }
+        .dot { width: 30px; height: 3px; background: rgba(255,255,255,0.3); cursor: pointer; }
+        .dot.active { background: #FFFFFF; }
 
-        .slider-dots {
-            position: absolute; bottom: 30px; left: 50%;
-            transform: translateX(-50%); display: flex; gap: 12px; z-index: 30;
-        }
-        .dot { width: 40px; height: 2px; background: rgba(0,0,0,0.1); position: relative; }
-        .dot-fill { position: absolute; left:0; top:0; height:100%; width:0; background: #000; }
-        .dot.active .dot-fill { width: 100%; transition: width 5000ms linear; }
+        /* 内容板块 */
+        .content-section { max-width: 1200px; margin: 0 auto; padding: 60px 24px; }
+        .download-btn { background: #000; color: white; padding: 18px 60px; font-weight: 600; border-radius: 4px; transition: all 0.3s ease; }
+        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
 
-        /* 2. 下载与社区区 */
-        .content-section { max-width: 1100px; margin: 0 auto; padding: 80px 40px; }
+        /* 内容发布区样式 */
+        .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: all 0.3s; }
+        .news-card:hover { border-color: var(--mcore-blue); }
 
-        .download-btn {
-            background: var(--text-dark); color: white;
-            padding: 20px 80px; font-weight: 600;
-            letter-spacing: 0.1em; border-radius: 2px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .download-btn:hover { background: #000; transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        /* 底部合规区域 */
+        .footer-links a { color: #9CA3AF; transition: color 0.2s; }
+        .footer-links a:hover { color: #111; }
 
-        .info-card { background: #FFFFFF; padding: 50px; border: 1px solid #EAEAEA; }
-
-        /* 3. 底部广告联盟位 */
-        .ad-footer-container { max-width: 1100px; margin: 0 auto 80px auto; padding: 0 40px; }
-        .ad-box {
-            width: 100%; min-height: 120px; background: #FFF;
-            border: 1px solid #EEE; display: flex; position: relative;
-            overflow: hidden; border-radius: 4px;
-            align-items: center; justify-content: center;
-        }
-        .ad-media-bg {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 1; opacity: 0; transition: opacity 0.5s ease;
-        }
-        .ad-overlay {
-            position: relative; z-index: 2; text-align: center;
-            padding: 15px 30px; background: rgba(255,255,255,0.85); border-radius: 2px;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .reveal { animation: fadeInUp 1s ease-out forwards; }
+        .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 
     <header class="header-logo-area">
-        <div class="flex flex-col items-center">
-            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" 
-                 alt="MCORE Logo" class="h-16 w-auto pointer-events-none">
-            <div class="mcore-brand-font">MCORE</div>
-        </div>
+        <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="MCORE Logo" class="h-14 w-auto">
+        <div class="mcore-brand-font">MCORE</div>
     </header>
 
     <section class="hero-slider" id="heroSlider">
         <div class="slide active" id="slide0">
-            <div class="media-container w-full h-full absolute inset-0"></div>
+            <div class="media-container w-full h-full absolute inset-0 bg-black"></div>
             <div class="slide-content">
                 <h1 class="slide-h1">纯粹 · 高效</h1>
-                <div class="slide-p">重新定义 PC 端资产清理逻辑</div>
+                <p class="text-lg tracking-[0.3em] font-light">重新定义 PC 端资产清理逻辑</p>
             </div>
         </div>
         <div class="slide" id="slide1">
-            <div class="media-container w-full h-full absolute inset-0"></div>
+            <div class="media-container w-full h-full absolute inset-0 bg-black"></div>
             <div class="slide-content">
                 <h1 class="slide-h1">毫秒级比对</h1>
-                <div class="slide-p">智能视觉算法识别重复图像</div>
+                <p class="text-lg tracking-[0.3em] font-light">智能视觉算法识别重复图像</p>
             </div>
         </div>
-        <div class="slider-dots">
-            <div class="dot active"><div class="dot-fill"></div></div>
-            <div class="dot"><div class="dot-fill"></div></div>
+        <div class="slider-dots" id="sliderDots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
         </div>
     </section>
 
     <main class="content-section">
-        <div class="grid md:grid-cols-2 gap-16 items-start">
-            <div class="space-y-16 reveal">
-                <div class="space-y-6">
-                    <h2 class="text-[10px] font-bold tracking-[0.5em] text-gray-400 uppercase">System Status</h2>
-                    <div class="flex gap-20">
-                        <div>
-                            <div id="downloadCount" class="text-6xl font-light tracking-tighter">5,280</div>
-                            <div class="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-3">累计下载次数</div>
-                        </div>
-                        <div>
-                            <div class="text-6xl font-light tracking-tighter">99.8%</div>
-                            <div class="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-3">处理完成率</div>
-                        </div>
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-24">
+            <div class="reveal">
+                <h2 class="text-[10px] font-black tracking-[0.5em] text-blue-600 uppercase mb-4">Core Technology</h2>
+                <h3 class="text-4xl font-bold mb-6 italic">让每一张图片都有迹可循</h3>
+                <div class="flex gap-12 mb-10">
+                    <div>
+                        <div id="downloadCount" class="text-5xl font-bold tracking-tighter">0</div>
+                        <p class="text-xs text-gray-400 font-bold mt-2 uppercase">Global Downloads</p>
+                    </div>
+                    <div>
+                        <div class="text-5xl font-bold tracking-tighter text-blue-600">99.8%</div>
+                        <p class="text-xs text-gray-400 font-bold mt-2 uppercase">Accuracy Rate</p>
                     </div>
                 </div>
-                <div class="pt-10">
-                    <a id="mainDownloadBtn" href="#" class="download-btn inline-block text-center">立即获取 MCORE</a>
-                    <p class="text-[10px] text-gray-400 mt-8 tracking-[0.2em]">稳定版本 v2.0.1 | 适用于 Windows 10/11</p>
-                </div>
+                <a id="mainDownloadBtn" href="#" class="download-btn inline-block">GET MCORE ACTIVATOR</a>
+                <p class="text-[10px] text-gray-400 mt-6 tracking-widest">Supports Windows 10/11 x64 Architecture</p>
             </div>
 
-            <div class="info-card reveal" style="animation-delay: 0.2s;">
-                <div class="text-center space-y-8">
-                    <div class="space-y-2">
-                        <h3 class="text-xs font-bold uppercase tracking-[0.4em] text-gray-400">Join Community</h3>
-                        <p class="text-sm font-medium">关注微信公众号获取技术支持</p>
+            <div class="bg-white p-8 border border-gray-100 shadow-sm reveal" style="transition-delay: 0.2s;">
+                <h4 class="text-sm font-bold mb-6 border-b pb-4 uppercase tracking-widest">About MCORE</h4>
+                <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                    MCORE 是一款专注于工业级 PC 资产管理与清理的效率工具。通过自主研发的视觉特征比对引擎，能够从海量碎片化数据中精准提取无效资产，为企业与个人开发者释放宝贵的磁盘空间。我们坚持安全、透明、高效的开发准则。
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-20 bg-gray-50 flex items-center justify-center p-2 border">
+                        <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/assets/qrcode.png?raw=true" alt="QR" class="w-full h-full object-contain">
                     </div>
-                    <div class="p-4 inline-block bg-[#FBFBFB] border border-gray-100">
-                        <div class="w-44 h-44 bg-white flex items-center justify-center overflow-hidden">
-                            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/assets/qrcode.png?raw=true" alt="QR" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/176?text=MCORE+QR'">
-                        </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-900">微信公众号：MCORE 科技</p>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase">Scan for Technical Support</p>
                     </div>
-                    <div class="text-[11px] font-bold text-gray-400 tracking-widest">搜索公众号：<span class="text-black">MCORE 科技</span></div>
                 </div>
             </div>
         </div>
+
+        <section class="mb-24 reveal">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-[10px] font-black tracking-[0.5em] text-gray-400 uppercase mb-2">News & Articles</h2>
+                    <h3 class="text-2xl font-bold">最新动态</h3>
+                </div>
+                <div class="h-[1px] flex-1 bg-gray-100 mx-8 mb-2"></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6" id="newsContainer">
+                <div class="news-card skeleton h-48"></div>
+                <div class="news-card skeleton h-48"></div>
+                <div class="news-card skeleton h-48"></div>
+            </div>
+        </section>
+
+        <section class="reveal">
+            <div id="footerAdBox" class="w-full bg-white border border-gray-100 rounded p-1 overflow-hidden relative min-h-[120px] flex items-center justify-center">
+                <div class="media-container absolute inset-0 z-0"></div>
+                <div class="relative z-10 text-center p-6 bg-white/90 backdrop-blur-sm border border-white">
+                    <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-1">Sponsored Content</span>
+                    <div id="footerAdText" class="text-sm font-medium text-gray-800">MCORE 广告位对接中</div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <section class="ad-footer-container reveal" style="animation-delay: 0.4s;">
-        <div class="ad-box" id="footerAdBox">
-            <div class="media-container w-full h-full absolute inset-0"></div>
-            <div class="ad-overlay">
-                <span class="text-[9px] uppercase tracking-[0.4em] text-gray-400 mb-2 block">AD Alliance</span>
-                <div id="footerAdText" class="text-gray-900 text-sm font-bold tracking-widest">广告位火热招商中</div>
+    <footer class="bg-white border-t border-gray-100 pt-20 pb-10">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="flex flex-col items-center mb-8">
+                <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-8 opacity-50 mb-2">
+                <p class="text-[10px] text-gray-300 tracking-[0.8em] font-bold uppercase">MCORE TECHNOLOGY &copy; 2026</p>
+            </div>
+            
+            <div class="footer-links flex flex-wrap justify-center gap-x-8 gap-y-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <a href="#about">About Us</a>
+                <a href="https://github.com/jasonmartin201919/mcore-activator" target="_blank">Open Source</a>
+                <a href="#privacy" onclick="alert('MCORE Privacy Policy:\nWe do not collect any personal image data. All processing is local.')">Privacy Policy</a>
+                <a href="#terms" onclick="alert('Terms of Service:\nMCORE is provided as-is for asset management purposes.')">Terms of Service</a>
+                <a href="mailto:support@mcore.sbs">Contact Support</a>
             </div>
         </div>
-    </section>
-
-    <footer class="py-20 text-center border-t border-gray-100 bg-white">
-        <div class="flex flex-col items-center mb-4 opacity-40">
-            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-8 w-auto">
-            <div class="mcore-brand-font" style="font-size: 1rem; margin-top: 5px;">MCORE</div>
-        </div>
-        <div class="text-[10px] text-gray-400 tracking-[0.6em] uppercase font-medium">MCORE TEAM &copy; 2026</div>
     </footer>
 
     <script>
-        // 配置 GitHub 远程备用地址（如果本地 config.json 加载失败）
-        const REMOTE_CONFIG = 'https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json';
+        const REPO_NAME = 'jasonmartin201919/mcore-activator';
+        const CONFIG_URL = `https://raw.githubusercontent.com/${REPO_NAME}/main/config.json`;
 
-        // --- 核心：媒体渲染逻辑（淡入效果） ---
-        function renderMedia(container, url) {
-            if (!url || url.trim() === "" || url === "#") return;
-            container.innerHTML = "";
-            const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-            
-            if (isVideo) {
-                const video = document.createElement('video');
-                video.src = url; video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
-                video.className = container.parentElement.classList.contains('ad-box') ? "ad-media-bg" : "slide-media";
-                video.oncanplay = () => {
-                    video.style.opacity = "0.7"; // 增加对比度
-                    container.parentElement.classList.add('has-media');
-                };
-                container.appendChild(video);
-            } else {
-                const img = new Image();
-                img.src = url;
-                img.className = container.parentElement.classList.contains('ad-box') ? "ad-media-bg" : "slide-media";
-                img.onload = () => {
-                    img.style.opacity = "0.6"; // 图片背景稍暗一点，突出文字
-                    container.parentElement.classList.add('has-media');
-                };
-                container.appendChild(img);
-            }
-        }
-
-        // --- 1. 轮播控制器 ---
+        // 轮播控制逻辑
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('.dot');
-        const interval = 5000;
 
         function showSlide(n) {
             slides.forEach(s => s.classList.remove('active'));
@@ -256,79 +180,92 @@
             currentSlide = (n + slides.length) % slides.length;
             slides[currentSlide].classList.add('active');
             dots[currentSlide].classList.add('active');
+        }
+
+        // 媒体加载函数
+        function renderMedia(container, url) {
+            if (!url || url.length < 5) return;
+            container.innerHTML = "";
+            const isVideo = /\.(mp4|webm)$/i.test(url);
+            const mediaTag = isVideo ? document.createElement('video') : new Image();
             
-            const fill = dots[currentSlide].querySelector('.dot-fill');
-            if (fill) {
-                fill.style.transition = 'none';
-                fill.style.width = '0';
-                setTimeout(() => {
-                    fill.style.transition = `width ${interval}ms linear`;
-                    fill.style.width = '100%';
-                }, 50);
-            }
+            mediaTag.src = url;
+            mediaTag.className = "slide-media";
+            if (isVideo) { mediaTag.autoplay = true; mediaTag.loop = true; mediaTag.muted = true; mediaTag.playsInline = true; }
+            
+            mediaTag.onload = mediaTag.oncanplay = () => { mediaTag.style.opacity = "0.5"; };
+            container.appendChild(mediaTag);
         }
 
-        // --- 2. 动态加载广告联盟配置 ---
-        async function loadAllianceConfig() {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5秒超时
-
-            async function tryFetch(url) {
-                const res = await fetch(url + '?nocache=' + Date.now(), { signal: controller.signal });
-                if (!res.ok) throw new Error();
-                return await res.json();
-            }
-
+        // 核心：加载配置与发布内容
+        async function init() {
             try {
-                let data;
-                try {
-                    data = await tryFetch('config.json'); // 首先尝试本地
-                } catch (e) {
-                    data = await tryFetch(REMOTE_CONFIG); // 失败则请求 GitHub
+                const response = await fetch(`${CONFIG_URL}?t=${Date.now()}`);
+                if (!response.ok) throw new Error("Config not found");
+                const data = await response.json();
+                const ads = data.ads;
+
+                // 1. 更新基础广告内容
+                if(ads.carousel_a_title) slides[0].querySelector('.slide-h1').innerText = ads.carousel_a_title;
+                if(ads.carousel_a_subtitle) slides[0].querySelector('p').innerText = ads.carousel_a_subtitle;
+                renderMedia(slides[0].querySelector('.media-container'), ads.carousel_a_media);
+
+                if(ads.carousel_b_title) slides[1].querySelector('.slide-h1').innerText = ads.carousel_b_title;
+                if(ads.carousel_b_subtitle) slides[1].querySelector('p').innerText = ads.carousel_b_subtitle;
+                renderMedia(slides[1].querySelector('.media-container'), ads.carousel_b_media);
+
+                if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
+                renderMedia(document.getElementById('footerAdBox').querySelector('.media-container'), ads.footer_ad_media);
+                
+                if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
+
+                // 2. 更新内容发布区 (如果 config 里有 news 数组)
+                const newsContainer = document.getElementById('newsContainer');
+                if (ads.news && Array.isArray(ads.news)) {
+                    newsContainer.innerHTML = ""; // 清除骨架屏
+                    ads.news.forEach(item => {
+                        newsContainer.innerHTML += `
+                            <article class="news-card flex flex-col justify-between">
+                                <div>
+                                    <span class="text-[9px] font-bold text-blue-600 uppercase tracking-tighter">${item.date || '2026-01-01'}</span>
+                                    <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
+                                    <p class="text-xs text-gray-500 leading-relaxed line-clamp-3">${item.summary}</p>
+                                </div>
+                                <a href="${item.link || '#'}" class="text-[10px] font-bold uppercase tracking-widest mt-6 hover:text-blue-600 transition">Read More +</a>
+                            </article>
+                        `;
+                    });
+                } else {
+                    // 如果没配置新闻，显示默认占位内容防止页面难看
+                    newsContainer.innerHTML = `<p class="text-gray-400 text-sm italic">暂无最新动态发布...</p>`;
                 }
 
-                if (data && data.ads) {
-                    const ads = data.ads;
-                    // 更新轮播 A
-                    const s0 = document.getElementById('slide0');
-                    if(ads.carousel_a_title) s0.querySelector('.slide-h1').innerText = ads.carousel_a_title;
-                    if(ads.carousel_a_subtitle) s0.querySelector('.slide-p').innerText = ads.carousel_a_subtitle;
-                    renderMedia(s0.querySelector('.media-container'), ads.carousel_a_media);
-
-                    // 更新轮播 B
-                    const s1 = document.getElementById('slide1');
-                    if(ads.carousel_b_title) s1.querySelector('.slide-h1').innerText = ads.carousel_b_title;
-                    if(ads.carousel_b_subtitle) s1.querySelector('.slide-p').innerText = ads.carousel_b_subtitle;
-                    renderMedia(s1.querySelector('.media-container'), ads.carousel_b_media);
-
-                    // 更新底部广告
-                    if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
-                    renderMedia(document.getElementById('footerAdBox').querySelector('.media-container'), ads.footer_ad_media);
-
-                    // 更新下载链接
-                    if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
-                }
-            } catch (err) {
-                console.log("Alliance config failed or timeout, using default.");
-            } finally {
-                clearTimeout(timeoutId);
+            } catch (error) {
+                console.error("Init Error:", error);
             }
         }
 
-        // --- 3. 初始化 ---
-        document.addEventListener('DOMContentLoaded', () => {
-            showSlide(0);
-            loadAllianceConfig();
-            // 每 3 秒跳动一次下载量
+        // 滚动显示动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+
+        window.onload = () => {
+            init();
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            
+            // 自动轮播
+            setInterval(() => showSlide(currentSlide + 1), 5000);
+
+            // 数字滚动动画
+            let count = 5280;
             setInterval(() => {
-                const el = document.getElementById('downloadCount');
-                let count = parseInt(el.innerText.replace(/,/g, ''));
-                count += Math.floor(Math.random() * 3) + 1;
-                el.innerText = count.toLocaleString();
+                count += Math.floor(Math.random() * 2);
+                document.getElementById('downloadCount').innerText = count.toLocaleString();
             }, 3000);
-            // 开启轮播计时
-            setInterval(() => showSlide(currentSlide + 1), interval);
-        });
+        };
     </script>
 </body>
 </html>
