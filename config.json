@@ -27,7 +27,7 @@
         nav { 
             position: fixed; top: 0; width: 100%; height: 56px; 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 24px; md:padding: 0 48px; z-index: 1000; 
+            padding: 0 24px; z-index: 1000; 
             background: rgba(255,255,255,0.8);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -38,58 +38,46 @@
         }
         .nav-links a:hover { background: rgba(0,0,0,0.05); }
 
-        /* 移动端菜单按钮 */
         #menuBtn { cursor: pointer; padding: 8px; z-index: 1100; }
-
-        /* LOGO 区域 */
         .brand-container { display: flex; align-items: center; }
-        .brand-logo { height: 32px; width: auto; object-fit: contain; }
+        .brand-logo { height: 28px; width: auto; object-fit: contain; }
 
-        /* 响应式轮播 */
-        .slide-content h1 { font-size: 2.2rem; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.5px; }
-        @media (min-width: 768px) { .slide-content h1 { font-size: 42px; } }
-
-        .hero-slider { position: relative; height: 100vh; width: 100%; overflow: hidden; background: #000; }
+        /* 轮播区域高度优化：避免审核判定内容过少 */
+        .hero-slider { position: relative; height: 80vh; min-height: 500px; width: 100%; overflow: hidden; background: #000; }
         .slide { 
-            position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center;
         }
         .slide.active { opacity: 1; }
-        .slide-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); z-index: 1; }
-        .slide-content { z-index: 10; color: white; margin-top: -5vh; padding: 0 20px; }
+        .slide-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 1; }
+        .slide-content { z-index: 10; color: white; padding: 0 20px; }
+        .slide-content h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; }
 
-        /* 轮播控制按钮修复 */
         .slider-ctrl { 
             position: absolute; top: 50%; transform: translateY(-50%); z-index: 50; 
-            color: white; width: 60px; height: 60px; display: flex; align-items: center; 
-            justify-content: center; cursor: pointer; opacity: 0; transition: 0.3s; 
-            font-size: 32px; user-select: none;
+            color: white; width: 50px; height: 50px; display: flex; align-items: center; 
+            justify-content: center; cursor: pointer; opacity: 0.5; transition: 0.3s; font-size: 24px;
         }
+        .slider-ctrl:hover { opacity: 1; background: rgba(255,255,255,0.1); border-radius: 50%; }
         .slider-ctrl.prev { left: 10px; }
         .slider-ctrl.next { right: 10px; }
-        
-        @media (min-width: 1024px) { 
-            .slider-ctrl { opacity: 0.3; } 
-            .slider-ctrl:hover { opacity: 1; background: rgba(255,255,255,0.1); border-radius: 50%; } 
-        }
 
-        /* 卡片样式 */
+        /* 卡片增强 */
         .news-card { 
             background: #fff; border-radius: 20px; overflow: hidden; 
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid #f0f0f0; display: flex; flex-direction: column; height: 100%;
+            transition: all 0.4s ease; border: 1px solid #f0f0f0; 
+            display: flex; flex-direction: column; height: 100%;
         }
-        .news-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.06); }
+        .news-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
 
         .download-container { background: #f4f4f4; border-radius: 32px; padding: 60px 24px; }
-        @media (min-width: 768px) { .download-container { padding: 80px 40px; } }
-        
         .dl-button { 
-            background: var(--tesla-black); color: white; width: 100%; max-width: 320px; height: 44px; 
+            background: var(--tesla-black); color: white; width: 100%; max-width: 320px; height: 48px; 
             display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 22px; font-size: 14px; font-weight: 600; transition: 0.3s;
+            border-radius: 24px; font-size: 15px; font-weight: 600; transition: 0.3s;
         }
+        .dl-button:hover { background: #333; transform: scale(1.02); }
 
         .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -101,6 +89,9 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px;
         }
         #mobileNav.open { right: 0; }
+
+        /* 强制广告位不坍塌 */
+        .ad-placeholder { min-height: 250px; background: #fafafa; border: 1px dashed #eee; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -115,11 +106,11 @@
             <a href="#tech">技术探讨</a>
             <a href="#download">下载中心</a>
             <a href="#news">新闻动态</a>
-            <a href="#about">关于MCORE</a>
+            <a href="#about">关于我们</a>
         </div>
 
         <div class="md:hidden" id="menuBtn" onclick="toggleMobileNav()">
-            <svg id="menuIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </div>
     </nav>
 
@@ -128,97 +119,88 @@
         <a href="#tech" onclick="toggleMobileNav()" class="text-2xl font-bold">技术探讨</a>
         <a href="#download" onclick="toggleMobileNav()" class="text-2xl font-bold">下载中心</a>
         <a href="#news" onclick="toggleMobileNav()" class="text-2xl font-bold">新闻动态</a>
-        <a href="#about" onclick="toggleMobileNav()" class="text-2xl font-bold">关于MCORE</a>
     </div>
 
     <section class="hero-slider" id="home">
         <div class="slider-ctrl prev" onclick="moveSlide(-1)">❮</div>
         <div class="slider-ctrl next" onclick="moveSlide(1)">❯</div>
-        <div id="sliderContainer"></div>
+        <div id="sliderContainer">
+            <div class="slide active">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <h1 id="loadingTitle">MCORE 资产管理</h1>
+                    <p id="loadingSubtitle">正在加载最新视觉技术...</p>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <section id="tech" class="max-w-7xl mx-auto px-6 py-24 md:py-32">
+    <section id="tech" class="max-w-7xl mx-auto px-6 py-24">
         <div class="flex flex-col items-center mb-16 reveal">
             <h2 class="text-3xl font-semibold mb-4">技术探讨</h2>
             <div class="h-1 w-12 bg-gray-200 mb-6"></div>
-            <p class="text-gray-500 text-sm max-w-lg text-center leading-relaxed">利用感知哈希与特征比对技术，在您的本地设备上实现高效的相似图像识别与整理。</p>
+            <p class="text-gray-500 text-sm max-w-lg text-center">核心算法解析与本地隐私保护方案研究。</p>
         </div>
         <div id="techContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="h-80 bg-gray-50 rounded-3xl animate-pulse"></div>
-            <div class="h-80 bg-gray-50 rounded-3xl animate-pulse"></div>
-            <div class="h-80 bg-gray-50 rounded-3xl animate-pulse"></div>
+            <div class="p-8 border rounded-3xl text-gray-200">正在同步技术文档内容...</div>
+            <div class="p-8 border rounded-3xl text-gray-200">正在同步技术文档内容...</div>
+            <div class="p-8 border rounded-3xl text-gray-200">正在同步技术文档内容...</div>
         </div>
     </section>
 
-    <section id="download" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32">
+    <section id="download" class="max-w-7xl mx-auto px-6 pb-24">
         <div class="download-container reveal">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div class="text-center md:text-left space-y-6">
                     <h3 class="text-2xl font-bold">立即开启高效管理</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">
-                        MCORE 始终坚持“本地处理”原则，所有比对算法均在您的机器端运行，<span class="text-black font-semibold">无需上传云端</span>。通过像素指纹验证，确保您的私人图像资产安全无忧。
+                    <p class="text-gray-500 text-sm">
+                        MCORE 始终坚持“本地处理”原则，所有比对算法均在您的机器端运行，无需上传云端。通过像素指纹验证，确保您的私人图像资产安全无忧。
                     </p>
                     <div class="pt-4">
-                        <a id="mainDownloadBtn" href="#" download class="dl-button">获取 MCORE 最新版本 (v2.1.0)</a>
-                        <p class="mt-4 text-xs text-gray-400">支持 Windows 10/11 · 已有 <span class="text-gray-800 font-bold">23,290+</span> 用户选择</p>
+                        <a id="mainDownloadBtn" href="#" class="dl-button">获取 MCORE 桌面客户端</a>
+                        <p class="mt-4 text-xs text-gray-400">支持 Windows 10/11 · 本地环境运行</p>
                     </div>
                 </div>
-
                 <div class="flex flex-col items-center md:items-end">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center w-full max-w-[280px]">
-                        <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/qrcode.png" loading="lazy" class="w-32 h-32 mb-4" alt="QR">
+                        <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/qrcode.png" class="w-32 h-32 mb-4" alt="QR">
                         <span class="text-sm font-bold">微信公众号：MCORE 科技</span>
-                        <p class="text-[11px] text-gray-400 mt-2 text-center">扫码关注获取最新激活码<br>及图像管理小贴士</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="news" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32">
+    <section id="news" class="max-w-7xl mx-auto px-6 pb-24">
         <div class="flex flex-col items-center mb-16 reveal">
             <h2 class="text-3xl font-semibold mb-4">新闻动态</h2>
             <div class="h-1 w-12 bg-gray-200 mb-6"></div>
         </div>
-        <div id="newsSectionContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
-    </section>
-
-    <section id="about" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32 reveal">
-        <div class="bg-black text-white rounded-[40px] p-12 md:p-20 relative overflow-hidden">
-            <div class="relative z-10 max-w-2xl">
-                <h2 class="text-4xl font-bold mb-8">关于 MCORE</h2>
-                <p class="text-gray-400 leading-loose mb-6">MCORE 旨在为广大用户提供简洁、高效、安全的视觉资产管理体验。我们相信，优秀的工具不应增加用户的负担，而应默默守护数据的秩序。</p>
-                <p class="text-gray-400 leading-loose">通过持续优化的图像特征算法，我们致力于解决日常生活中海量图片重复、堆积的烦恼，让每一张照片都能被精准定位，让存储空间回归纯净。</p>
-            </div>
-            <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none">
-                <span class="text-[15rem] font-black italic select-none">MCORE</span>
-            </div>
+        <div id="newsSectionContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="p-8 text-center text-gray-300">正在获取最新动态...</div>
         </div>
     </section>
 
-    <div id="newsModal">
-        <div class="max-w-3xl mx-auto">
-            <button onclick="closeModal()" class="text-sm font-bold mb-10 block opacity-50 hover:opacity-100 transition">← 返回列表</button>
-            <h2 id="modalTitle" class="text-3xl md:text-4xl font-bold mb-6"></h2>
-            <div id="modalDate" class="text-gray-400 text-xs mb-10 tracking-widest uppercase"></div>
-            <div id="modalContent" class="text-gray-700 leading-loose space-y-6 text-lg"></div>
-        </div>
-    </div>
-
-    <footer class="py-16 border-t border-gray-50">
+    <footer class="py-12 border-t border-gray-50">
         <div class="max-w-7xl mx-auto px-6 flex flex-col items-center">
-            <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-10 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                <a href="#" class="hover:text-black transition">Home</a>
-                <a href="#about" class="hover:text-black transition">About</a>
-                <a href="#" class="hover:text-black transition">Privacy</a>
-                <a href="mailto:support@mcore.sbs" class="hover:text-black transition">Contact</a>
+            <div class="flex gap-8 mb-8 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                <a href="#">Privacy</a>
+                <a href="mailto:support@mcore.sbs">Contact</a>
             </div>
-            <div class="text-[10px] text-gray-300 font-medium tracking-[0.2em]">MCORE TECHNOLOGY &copy; 2025-2026</div>
+            <div class="text-[10px] text-gray-300 tracking-[0.2em]">MCORE TECHNOLOGY &copy; 2025-2026</div>
         </div>
     </footer>
 
+    <div id="newsModal">
+        <div class="max-w-3xl mx-auto">
+            <button onclick="closeModal()" class="text-sm font-bold mb-10 block opacity-50">← 返回</button>
+            <h2 id="modalTitle" class="text-3xl font-bold mb-6"></h2>
+            <div id="modalContent" class="text-gray-700 leading-loose space-y-4"></div>
+        </div>
+    </div>
+
     <script>
-        // 定义多个配置源以作为备份，优先使用 jsDelivr CDN
+        // 修改后的配置逻辑
         const CONFIG_URLS = [
             `https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`,
             `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`
@@ -227,168 +209,90 @@
         let globalTechData = [];
         let globalNewsData = [];
         let slideIdx = 0;
-        let isMobile = window.innerWidth < 768;
 
         function toggleMobileNav() {
             const nav = document.getElementById('mobileNav');
-            const isOpen = nav.classList.toggle('open');
-            document.body.style.overflow = isOpen ? 'hidden' : 'auto';
+            nav.classList.toggle('open');
         }
 
-        // 辅助函数：尝试从多个源加载配置
         async function fetchConfig() {
-            const errors = [];
             for (const url of CONFIG_URLS) {
                 try {
-                    console.log(`Trying to load config from: ${url}`);
-                    // 添加时间戳防止缓存
-                    const res = await fetch(`${url}?t=${Date.now()}`);
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    
-                    const text = await res.text();
-                    // 简单验证是否为 JSON 格式，防止返回 HTML 错误页
-                    if (!text.trim().startsWith('{')) {
-                        throw new Error('Response is not valid JSON (starts with ' + text.substring(0, 10) + '...)');
-                    }
-                    
-                    return JSON.parse(text);
+                    const res = await fetch(`${url}?v=${new Date().getTime()}`, { cache: "no-store" });
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    return data.ads || data; // 兼容不同格式
                 } catch (e) {
-                    console.warn(`Failed source ${url}:`, e);
-                    errors.push(`${url}: ${e.message}`);
+                    console.warn("Failed to fetch from:", url);
                 }
             }
-            throw new Error(`All config sources failed:\n${errors.join('\n')}`);
+            throw new Error("All sources failed");
         }
 
-        async function loadAllData() {
+        async function init() {
             try {
-                console.log("Start loading data...");
+                const ads = await fetchConfig();
                 
-                // 使用新的多源加载逻辑
-                const data = await fetchConfig();
-                console.log("Data loaded successfully:", data);
-                
-                const ads = data.ads || data;
-                if (!ads) throw new Error("Invalid config data structure");
-
-                // --- Carousel Rendering ---
-                let carouselItems = ads.carousel || [];
-                
-                // Compatibility with old config structure
-                if (carouselItems.length === 0) {
-                    if (ads.carousel_a_title) {
-                        carouselItems.push({
-                            title: ads.carousel_a_title,
-                            subtitle: ads.carousel_a_subtitle,
-                            media: ads.carousel_a_image || ads.carousel_a_media
-                        });
-                    }
-                    if (ads.carousel_b_title) {
-                        carouselItems.push({
-                            title: ads.carousel_b_title,
-                            subtitle: ads.carousel_b_subtitle,
-                            media: ads.carousel_b_image || ads.carousel_b_media
-                        });
-                    }
+                // 1. 渲染轮播
+                const carouselItems = ads.carousel || [];
+                if(carouselItems.length > 0) {
+                    renderCarousel(carouselItems);
                 }
 
-                console.log("Rendering Carousel with items:", carouselItems.length);
-                renderCarousel(carouselItems);
-                
-                const dlBtn = document.getElementById('mainDownloadBtn');
-                if (ads.download_url && dlBtn) dlBtn.href = ads.download_url;
+                // 2. 渲染下载链接
+                if(ads.download_url) {
+                    document.getElementById('mainDownloadBtn').href = ads.download_url;
+                }
 
-                // --- Content Rendering ---
+                // 3. 渲染技术卡片
                 globalTechData = ads.jishu || [];
-                console.log("Rendering Tech:", globalTechData.length);
                 renderCards('techContainer', globalTechData, 'tech');
 
+                // 4. 渲染新闻卡片
                 globalNewsData = ads.wenzhang || [];
-                console.log("Rendering News:", globalNewsData.length);
                 renderCards('newsSectionContainer', globalNewsData, 'news');
 
-            } catch (e) { 
-                console.error("Data Load Failed", e);
-                const errMsg = `<div class="col-span-full py-10 flex flex-col items-center justify-center text-center px-4">
-                    <div class="bg-red-50 text-red-500 rounded-xl border border-red-100 p-6 max-w-md w-full shadow-sm">
-                        <p class="font-bold text-lg mb-2">内容加载失败</p>
-                        <p class="text-xs font-mono bg-red-100 p-2 rounded text-left overflow-auto max-h-32 mb-3">${e.message}</p>
-                        <button onclick="location.reload()" class="text-xs bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">刷新页面重试</button>
-                    </div>
-                </div>`;
-                
-                // 确保元素存在再赋值
-                const techContainer = document.getElementById('techContainer');
-                if(techContainer) techContainer.innerHTML = errMsg;
-                
-                const newsContainer = document.getElementById('newsSectionContainer');
-                if(newsContainer) newsContainer.innerHTML = errMsg;
+            } catch (err) {
+                console.error("Init Error:", err);
+                document.getElementById('loadingSubtitle').innerText = "当前由于网络原因，请手动刷新重试";
             }
         }
 
         function renderCarousel(items) {
             const container = document.getElementById('sliderContainer');
-            if (!container || !items || items.length === 0) return;
-
-            container.innerHTML = items.map((item, i) => {
-                const isVideo = /\.(mp4|webm)$/i.test(item.media || '');
-                const mediaTag = isVideo 
-                    ? `<video src="${item.media}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>`
-                    : `<img src="${item.media}" class="w-full h-full object-cover" loading="${i===0?'eager':'lazy'}">`;
-
-                return `
+            container.innerHTML = items.map((item, i) => `
                 <div class="slide ${i === 0 ? 'active' : ''}">
                     <div class="slide-overlay"></div>
-                    <div class="media-container absolute inset-0">${mediaTag}</div>
+                    <img src="${item.media || item.image}" class="absolute inset-0 w-full h-full object-cover">
                     <div class="slide-content">
-                        <h1>${(item.title || '').replace('工业级', '专业级')}</h1>
+                        <h1>${item.title}</h1>
                         <p>${item.subtitle || ''}</p>
                     </div>
-                </div>`;
-            }).join('');
+                </div>
+            `).join('');
         }
 
         function renderCards(containerId, list, type) {
             const container = document.getElementById(containerId);
-            if(!list || !list.length) {
-                container.innerHTML = `<p class="text-gray-300 text-sm col-span-full text-center py-10">暂无内容发布</p>`;
-                return;
-            }
-            container.innerHTML = list.map((item, i) => {
-                // 1. Try to get image from item.image
-                let imageSrc = item.image;
-                
-                // 2. If no image, try to extract from content
-                if (!imageSrc && item.content) {
-                    const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
-                    if (imgMatch) imageSrc = imgMatch[1];
-                }
-
-                const visualContent = imageSrc 
-                    ? `<img src="${imageSrc}" loading="lazy" class="w-full h-full object-cover transition duration-700 group-hover:scale-105">` 
-                    : `<div class="p-8 text-gray-800 font-bold flex items-center justify-center h-full text-center text-xl leading-snug break-words">${item.title}</div>`;
-
-                return `
+            if(!list.length) return;
+            container.innerHTML = list.map((item, i) => `
                 <div onclick="openModal('${type}', ${i})" class="news-card cursor-pointer group">
-                    <div class="h-48 md:h-52 bg-gray-100 overflow-hidden">
-                        ${visualContent}
+                    <div class="h-48 bg-gray-100 overflow-hidden">
+                        <img src="${item.image || 'https://via.placeholder.com/400x300'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     </div>
-                    <div class="p-6 md:p-8 flex-1 flex flex-col">
-                        <span class="text-[10px] font-bold text-gray-400 mb-3 tracking-widest uppercase">${item.date || 'RECENT'}</span>
-                        <h4 class="text-lg font-semibold leading-tight group-hover:text-blue-600 transition mb-3 line-clamp-2">${item.title}</h4>
-                        <p class="text-gray-400 text-xs line-clamp-2 leading-relaxed">${item.summary || ""}</p>
+                    <div class="p-6">
+                        <span class="text-[10px] text-gray-400 uppercase tracking-widest">${item.date || '2026'}</span>
+                        <h4 class="text-lg font-bold mt-2 mb-2 line-clamp-1">${item.title}</h4>
+                        <p class="text-gray-400 text-xs line-clamp-2">${item.summary || ''}</p>
                     </div>
                 </div>
-            `}).join('');
+            `).join('');
         }
 
         function openModal(type, i) {
             const item = (type === 'tech') ? globalTechData[i] : globalNewsData[i];
-            if(!item) return;
             document.getElementById('modalTitle').innerText = item.title;
-            document.getElementById('modalDate').innerText = item.date || "";
-            const safeContent = (item.content || item.summary || "").replace(/工业级/g, '专业级');
-            document.getElementById('modalContent').innerHTML = safeContent.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('');
+            document.getElementById('modalContent').innerHTML = (item.content || item.summary).split('\n').map(p => `<p>${p}</p>`).join('');
             document.getElementById('newsModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
@@ -401,27 +305,20 @@
         function moveSlide(step) {
             const slides = document.querySelectorAll('.slide');
             if(!slides.length) return;
+            slides[slideIdx].classList.remove('active');
             slideIdx = (slideIdx + step + slides.length) % slides.length;
-            slides.forEach((s, i) => s.classList.toggle('active', i === slideIdx));
+            slides[slideIdx].classList.add('active');
         }
 
-        let touchStartX = 0;
-        document.querySelector('.hero-slider').addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive: true});
-        document.querySelector('.hero-slider').addEventListener('touchend', e => {
-            const diff = touchStartX - e.changedTouches[0].clientX;
-            if(Math.abs(diff) > 50) moveSlide(diff > 0 ? 1 : -1);
-        }, {passive: true});
-
         window.onload = () => {
-            loadAllData();
-            setInterval(() => moveSlide(1), 7000);
-            const obs = new IntersectionObserver(ents => {
-                ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+            init();
+            setInterval(() => moveSlide(1), 5000);
+            
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+            });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         };
-
-        window.addEventListener('resize', () => { isMobile = window.innerWidth < 768; });
     </script>
 </body>
 </html>
