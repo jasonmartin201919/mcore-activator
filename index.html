@@ -35,7 +35,7 @@
         .slider-ctrl svg { width: 20px; height: 20px; stroke-width: 2.5px; }
 
         /* 新闻卡片 */
-        .news-card { background: white; border: 1px solid #eee; padding: 0; transition: 0.3s; height: 100%; display: flex; flex-direction: column; cursor: pointer; overflow: hidden; }
+        .news-card { background: white; border: 1px solid #eee; padding: 0; transition: 0.3s; height: 100%; display: flex; flex-direction: column; cursor: pointer; overflow: hidden; text-decoration: none; color: inherit; }
         .news-card:hover { border-color: var(--mcore-blue); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .news-image-wrapper { width: 100%; height: 160px; background: #f0f0f0; overflow: hidden; }
         .news-content-padding { padding: 20px; flex: 1; display: flex; flex-direction: column; }
@@ -239,14 +239,13 @@
             updateDownloadUI();
         }
 
-        // --- 核心配置加载与媒体更新修复 ---
+        // --- 核心配置加载 ---
         async function loadConfig() {
             try {
                 const res = await fetch(`${CONFIG_URL}?t=${Date.now()}`);
                 const data = await res.json();
                 const ads = data.ads || data;
 
-                // 修复：使用更可靠的 ID 选择器定位容器，确保图片加载到 correct 节点
                 if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
                 if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
                 updateMedia(document.querySelector('#slide_0_container .media-container'), ads.carousel_a_image || ads.carousel_a_media);
@@ -259,25 +258,29 @@
                 if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 updateMedia(document.getElementById('footerMedia'), ads.footer_ad_image || ads.footer_ad_media);
 
-                // 加载新闻
+                // --- 新闻加载逻辑：跳转至 wenzhang/ 目录 ---
                 const container = document.getElementById('newsContainer');
                 globalNewsData = ads.news || [];
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
                         const coverImg = item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-gray-300 uppercase text-[9px] font-bold">Mcore News</div>`;
+                        
+                        // 逻辑：如果 json 中有 url 字段，则跳转到 wenzhang/文件名，否则使用旧的弹窗模式
+                        const targetUrl = item.url ? `wenzhang/${item.url}` : `javascript:openModal(${index})`;
+
                         container.innerHTML += `
-                            <article class="news-card" onclick="openModal(${index})">
+                            <a href="${targetUrl}" class="news-card">
                                 <div class="news-image-wrapper">${coverImg}</div>
                                 <div class="news-content-padding">
                                     <span class="text-[9px] font-bold text-blue-600 uppercase">${item.date}</span>
                                     <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
                                     <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-2">${item.summary || ""}</p>
-                                    <div class="text-[10px] font-black uppercase tracking-widest mt-auto text-black group hover:text-blue-600 transition">
+                                    <div class="text-[10px] font-black uppercase tracking-widest mt-auto text-black group-hover:text-blue-600 transition">
                                         Read More <span class="inline-block transform group-hover:translate-x-1 transition-transform">+</span>
                                     </div>
                                 </div>
-                            </article>
+                            </a>
                         `;
                     });
                 } else {
@@ -317,7 +320,6 @@
             const isVideo = /\.(mp4|webm)$/i.test(url);
             const el = isVideo ? document.createElement('video') : new Image();
             el.src = url;
-            // 保持 opacity-50 让文字可读，如果希望完全不透明可改为 opacity-100
             el.className = "w-full h-full object-cover opacity-50 transition-opacity duration-1000";
             if(isVideo) { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
             container.appendChild(el);
