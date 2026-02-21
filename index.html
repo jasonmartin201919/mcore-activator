@@ -20,7 +20,6 @@
         .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
         .slide.active { opacity: 1; }
         
-        /* 轮播控制按钮 (Tesla Style) */
         .slider-ctrl { 
             position: absolute; top: 50%; transform: translateY(-50%); z-index: 30; 
             background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); 
@@ -45,7 +44,6 @@
         .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
         
-        /* 详情弹窗样式 */
         #newsModal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); overflow-y: auto; }
         #newsModal.active { display: block; animation: fadeIn 0.4s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -74,7 +72,7 @@
     </div>
 
     <header class="h-[180px] bg-white flex flex-col items-center justify-center border-b">
-        <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" alt="Logo" class="h-14 w-auto">
+        <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/MCORE_Industrial_Logo_V6.png" alt="Logo" class="h-14 w-auto" crossorigin="anonymous">
         <div class="mcore-brand-font mt-3">MCORE DATA TECHNOLOGY TEAM</div>
     </header>
 
@@ -109,7 +107,7 @@
                 <h3 class="text-4xl font-bold mb-8 italic">让每一张图片都有迹可循</h3>
                 <div class="flex gap-12 mb-10">
                     <div>
-                        <div id="downloadCount" class="text-5xl font-bold tracking-tighter">5,280</div>
+                        <div id="downloadCount" class="text-5xl font-bold tracking-tighter">--</div>
                         <p class="text-[10px] text-gray-400 font-bold mt-2 uppercase">Global Downloads</p>
                     </div>
                     <div>
@@ -123,7 +121,7 @@
                 <h4 class="text-xs font-bold mb-4 uppercase tracking-widest border-b pb-4">关于 MCORE</h4>
                 <p class="text-gray-500 text-sm leading-relaxed mb-6">MCORE 是一款专注于工业级 PC 资产管理与清理的效率工具。通过自主研发的视觉特征比对引擎，能够从海量碎片化数据中精准提取无效资产。我们坚持安全、透明、高效的开发准则。</p>
                 <div class="flex items-center gap-4">
-                    <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/assets/qrcode.png?raw=true" class="w-16 h-16 border p-1">
+                    <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/qrcode.png" class="w-16 h-16 border p-1" crossorigin="anonymous">
                     <div class="text-[10px]">
                         <p class="font-bold text-gray-900">微信公众号：MCORE 科技</p>
                         <p class="text-gray-400 uppercase mt-1">Scan for technical support</p>
@@ -157,7 +155,7 @@
 
     <footer class="bg-white border-t py-12">
         <div class="max-w-6xl mx-auto px-6 text-center">
-            <img src="https://github.com/jasonmartin201919/mcore-activator/blob/main/MCORE_Industrial_Logo_V6.png?raw=true" class="h-6 opacity-30 mx-auto mb-4">
+            <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/MCORE_Industrial_Logo_V6.png" class="h-6 opacity-30 mx-auto mb-4" crossorigin="anonymous">
             <p class="text-[9px] text-gray-400 tracking-[0.5em] font-bold uppercase mb-8">MCORE TECHNOLOGY &copy; 2026</p>
             <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 <a href="about.html" class="hover:text-black transition-colors">About Us / 关于我们</a>
@@ -174,53 +172,66 @@
         let slideIdx = 0;
         let slideTimer;
 
-        // --- 下载量自增逻辑 ---
+        // --- 增强版 URL 安全转换逻辑 ---
+        function getSafeUrl(url) {
+            if (!url) return "";
+            let newUrl = url;
+            // 如果是 jsDelivr，随机切换可用节点并添加缓存击穿
+            if (newUrl.includes('cdn.jsdelivr.net')) {
+                const nodes = ['fastly.jsdelivr.net', 'gcore.jsdelivr.net'];
+                const selectedNode = nodes[Math.floor(Math.random() * nodes.length)];
+                newUrl = newUrl.replace('cdn.jsdelivr.net', selectedNode);
+                newUrl += (newUrl.includes('?') ? '&' : '?') + 'v=' + Date.now();
+            }
+            // 如果是 GitHub 链接，确保指向原始资源
+            if (newUrl.includes('github.com') && !newUrl.includes('raw.githubusercontent.com')) {
+                newUrl = newUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+            }
+            return newUrl;
+        }
+
+        // --- 下载量自增稳定逻辑 (锁定 20000+) ---
         function initDownloadCounter() {
-            let storedData = localStorage.getItem('mcore_download_stats');
+            const MIN_VAL = 23560; // 设定一个最小基数，防止跳回 5000
+            let storedData = localStorage.getItem('mcore_v3_stats');
             let data;
+            
             if (!storedData) {
-                data = { baseCount: 5280, realClicks: 0, fakeIncrement: 0 };
+                data = { base: MIN_VAL, clicks: 0, fake: 0 };
             } else {
                 data = JSON.parse(storedData);
+                // 如果存的数据比预设基数小，强行修正
+                if (data.base < MIN_VAL) data.base = MIN_VAL;
             }
-            localStorage.setItem('mcore_download_stats', JSON.stringify(data));
+            
+            localStorage.setItem('mcore_v3_stats', JSON.stringify(data));
             updateDownloadUI();
             startFakeIncrement();
         }
 
-        function calculateCurrentDownloads() {
-            const raw = localStorage.getItem('mcore_download_stats');
-            if(!raw) return 5280;
-            const data = JSON.parse(raw);
-            return data.baseCount + (data.fakeIncrement || 0) + (data.realClicks || 0);
-        }
-
         function updateDownloadUI() {
-            const count = calculateCurrentDownloads();
+            const data = JSON.parse(localStorage.getItem('mcore_v3_stats'));
+            const total = data.base + data.clicks + data.fake;
             const el = document.getElementById('downloadCount');
-            if(el) el.innerText = count.toLocaleString();
+            if(el) el.innerText = total.toLocaleString();
         }
 
         function startFakeIncrement() {
-            const nextTick = Math.floor(Math.random() * (20000 - 3000 + 1)) + 3000;
+            // 每 8-15 秒增加 1-3 个
+            const nextTick = Math.floor(Math.random() * 7000) + 8000;
             setTimeout(() => {
-                let raw = localStorage.getItem('mcore_download_stats');
-                if(raw) {
-                    let data = JSON.parse(raw);
-                    data.fakeIncrement = (data.fakeIncrement || 0) + 1;
-                    localStorage.setItem('mcore_download_stats', JSON.stringify(data));
-                    updateDownloadUI();
-                }
+                let data = JSON.parse(localStorage.getItem('mcore_v3_stats'));
+                data.fake += Math.floor(Math.random() * 3) + 1;
+                localStorage.setItem('mcore_v3_stats', JSON.stringify(data));
+                updateDownloadUI();
                 startFakeIncrement();
             }, nextTick);
         }
 
         function handleDownloadClick() {
-            let raw = localStorage.getItem('mcore_download_stats');
-            if(!raw) return;
-            let data = JSON.parse(raw);
-            data.realClicks = (data.realClicks || 0) + 1;
-            localStorage.setItem('mcore_download_stats', JSON.stringify(data));
+            let data = JSON.parse(localStorage.getItem('mcore_v3_stats'));
+            data.clicks += 1;
+            localStorage.setItem('mcore_v3_stats', JSON.stringify(data));
             updateDownloadUI();
         }
 
@@ -248,19 +259,15 @@
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
-                        // 【改进点】解决跟踪预防拦截：备用节点转换 + 安全加载属性
-                        let imgUrl = item.image || "";
-                        if (imgUrl.includes('cdn.jsdelivr.net')) {
-                            imgUrl = imgUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net');
-                        }
-
-                        const coverHtml = imgUrl 
-                            ? `<img src="${imgUrl}" 
+                        const safeImgUrl = getSafeUrl(item.image);
+                        const coverHtml = safeImgUrl 
+                            ? `<img src="${safeImgUrl}" 
                                     alt="${item.title}" 
                                     loading="lazy" 
                                     crossorigin="anonymous" 
                                     referrerpolicy="no-referrer" 
-                                    style="width:100%; height:100%; object-fit:cover;">` 
+                                    style="width:100%; height:100%; object-fit:cover;"
+                                    onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-300 text-[9px]\'>IMAGE ERROR</div>'">` 
                             : `<div class="w-full h-full flex items-center justify-center text-gray-300 uppercase text-[9px] font-bold">MCORE NEWS</div>`;
                         
                         const targetUrl = item.url ? `wenzhang/${item.url}` : `javascript:openModal(${index})`;
@@ -292,12 +299,8 @@
             if(!item) return;
             const heroBox = document.getElementById('modalHeroImage');
             if(item.image) {
-                let modalImgUrl = item.image;
-                if (modalImgUrl.includes('cdn.jsdelivr.net')) {
-                    modalImgUrl = modalImgUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net');
-                }
                 heroBox.classList.remove('hidden');
-                heroBox.querySelector('img').src = modalImgUrl;
+                heroBox.querySelector('img').src = getSafeUrl(item.image);
             } else {
                 heroBox.classList.add('hidden');
             }
@@ -317,19 +320,17 @@
         function updateMedia(container, url) {
             if(!container || !url || url.length < 5) return;
             container.innerHTML = "";
-            let safeUrl = url;
-            if (safeUrl.includes('cdn.jsdelivr.net')) {
-                safeUrl = safeUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net');
-            }
-            const isVideo = /\.(mp4|webm)$/i.test(safeUrl);
+            const safeMediaUrl = getSafeUrl(url);
+            const isVideo = /\.(mp4|webm)$/i.test(safeMediaUrl);
             const el = isVideo ? document.createElement('video') : new Image();
-            el.src = safeUrl;
+            el.src = safeMediaUrl;
             el.className = "w-full h-full object-cover opacity-50 transition-opacity duration-1000";
             if(!isVideo) {
                 el.setAttribute('crossorigin', 'anonymous');
                 el.setAttribute('referrerpolicy', 'no-referrer');
+            } else {
+                el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true;
             }
-            if(isVideo) { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
             container.appendChild(el);
         }
 
