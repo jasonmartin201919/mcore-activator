@@ -84,14 +84,14 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
         </div>
 
-        <div class="slide active">
+        <div class="slide active" id="slide_0_container">
             <div class="media-container absolute inset-0 bg-black"></div>
             <div class="relative z-20 text-white p-6">
                 <h1 id="title_0" class="text-5xl font-bold mb-4">纯粹 · 高效</h1>
                 <p id="sub_0" class="text-lg tracking-[0.3em] font-light">重新定义 PC 端资产清理逻辑</p>
             </div>
         </div>
-        <div class="slide">
+        <div class="slide" id="slide_1_container">
             <div class="media-container absolute inset-0 bg-black"></div>
             <div class="relative z-20 text-white p-6">
                 <h1 id="title_1" class="text-5xl font-bold mb-4">毫秒级比对</h1>
@@ -172,7 +172,7 @@
         let slideIdx = 0;
         let slideTimer;
 
-        // --- 虚增下载量核心逻辑 (已修复 Null 报错并增强持久化) ---
+        // --- 虚增下载量核心逻辑 ---
         const DAILY_FAKE_MAX = 30000;
         const START_HOUR = 7; 
         const END_HOUR = 24;
@@ -181,57 +181,38 @@
         function initDownloadCounter() {
             const now = new Date();
             const todayStr = now.toDateString();
-            
             let storedData = localStorage.getItem('mcore_download_stats');
             let data;
 
             if (!storedData) {
-                // 首次访问：设置初始种子
-                data = {
-                    date: todayStr,
-                    baseCount: 5280, 
-                    realClicks: 0
-                };
+                data = { date: todayStr, baseCount: 5280, realClicks: 0 };
             } else {
                 data = JSON.parse(storedData);
-                // 跨天检查
                 if (data.date !== todayStr) {
-                    // 如果换天了，把昨天的 30000 额度正式永久加入 baseCount
                     data.baseCount += DAILY_FAKE_MAX;
                     data.date = todayStr;
                     data.realClicks = 0;
                 }
             }
-
-            // 保存（确保 calculate 时不为 null）
             localStorage.setItem('mcore_download_stats', JSON.stringify(data));
-            
-            // 立即渲染一次
             updateDownloadUI();
-            // 开始循环随机增长
             startFakeIncrement();
         }
 
         function calculateCurrentDownloads() {
             const raw = localStorage.getItem('mcore_download_stats');
             if(!raw) return 5280;
-            
             const data = JSON.parse(raw);
             const now = new Date();
             const h = now.getHours();
             const m = now.getMinutes();
             const s = now.getSeconds();
-
             let fakeIncrement = 0;
-
-            // 只有在 7:00 - 23:59 之间才计算当天的平滑增长
             if (h >= START_HOUR) {
                 const elapsedSeconds = ((h - START_HOUR) * 3600) + (m * 60) + s;
-                // 计算当前时间点应该达到的增长比例
                 const ratio = Math.min(elapsedSeconds / TOTAL_SECONDS, 1);
                 fakeIncrement = Math.floor(ratio * DAILY_FAKE_MAX);
             }
-
             return data.baseCount + fakeIncrement + (data.realClicks || 0);
         }
 
@@ -242,7 +223,6 @@
         }
 
         function startFakeIncrement() {
-            // 每 3-8 秒随机间隔执行一次 UI 刷新（模拟真实动态感）
             const nextTick = Math.floor(Math.random() * (8000 - 3000 + 1)) + 3000;
             setTimeout(() => {
                 updateDownloadUI();
@@ -258,29 +238,30 @@
             localStorage.setItem('mcore_download_stats', JSON.stringify(data));
             updateDownloadUI();
         }
-        // -----------------------
 
+        // --- 核心配置加载与媒体更新修复 ---
         async function loadConfig() {
             try {
                 const res = await fetch(`${CONFIG_URL}?t=${Date.now()}`);
                 const data = await res.json();
                 const ads = data.ads || data;
 
+                // 修复：使用更可靠的 ID 选择器定位容器，确保图片加载到 correct 节点
                 if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
                 if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
-                updateMedia(document.querySelector('#heroSlider .slide:nth-child(3) .media-container'), ads.carousel_a_image || ads.carousel_a_media);
+                updateMedia(document.querySelector('#slide_0_container .media-container'), ads.carousel_a_image || ads.carousel_a_media);
 
                 if(ads.carousel_b_title) document.getElementById('title_1').innerText = ads.carousel_b_title;
                 if(ads.carousel_b_subtitle) document.getElementById('sub_1').innerText = ads.carousel_b_subtitle;
-                updateMedia(document.querySelector('#heroSlider .slide:nth-child(4) .media-container'), ads.carousel_b_image || ads.carousel_b_media);
+                updateMedia(document.querySelector('#slide_1_container .media-container'), ads.carousel_b_image || ads.carousel_b_media);
 
                 if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
                 if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 updateMedia(document.getElementById('footerMedia'), ads.footer_ad_image || ads.footer_ad_media);
 
+                // 加载新闻
                 const container = document.getElementById('newsContainer');
                 globalNewsData = ads.news || [];
-                
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
@@ -302,11 +283,8 @@
                 } else {
                     container.innerHTML = `<p class="col-span-3 text-center text-gray-400 italic py-10">暂无最新动态发布</p>`;
                 }
-
             } catch (e) {
                 console.error("加载失败:", e);
-                const container = document.getElementById('newsContainer');
-                if(container) container.innerHTML = `<p class="col-span-3 text-center text-red-400">配置加载失败，请检查网络</p>`;
             }
         }
 
@@ -339,7 +317,8 @@
             const isVideo = /\.(mp4|webm)$/i.test(url);
             const el = isVideo ? document.createElement('video') : new Image();
             el.src = url;
-            el.className = "w-full h-full object-cover opacity-50";
+            // 保持 opacity-50 让文字可读，如果希望完全不透明可改为 opacity-100
+            el.className = "w-full h-full object-cover opacity-50 transition-opacity duration-1000";
             if(isVideo) { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
             container.appendChild(el);
         }
@@ -362,7 +341,7 @@
         function resetTimer() { clearInterval(slideTimer); startTimer(); }
 
         window.onload = () => {
-            initDownloadCounter(); // 核心修复：先初始化计数器
+            initDownloadCounter();
             loadConfig();
             startTimer();
             const obs = new IntersectionObserver(ents => {
