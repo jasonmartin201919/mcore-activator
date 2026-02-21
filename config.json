@@ -318,18 +318,32 @@
                 container.innerHTML = `<p class="text-gray-300 text-sm col-span-full text-center py-10">暂无内容发布</p>`;
                 return;
             }
-            container.innerHTML = list.map((item, i) => `
+            container.innerHTML = list.map((item, i) => {
+                // 1. Try to get image from item.image
+                let imageSrc = item.image;
+                
+                // 2. If no image, try to extract from content
+                if (!imageSrc && item.content) {
+                    const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+                    if (imgMatch) imageSrc = imgMatch[1];
+                }
+
+                const visualContent = imageSrc 
+                    ? `<img src="${imageSrc}" loading="lazy" class="w-full h-full object-cover transition duration-700 group-hover:scale-105">` 
+                    : `<div class="p-8 text-gray-800 font-bold flex items-center justify-center h-full text-center text-xl leading-snug break-words">${item.title}</div>`;
+
+                return `
                 <div onclick="openModal('${type}', ${i})" class="news-card cursor-pointer group">
                     <div class="h-48 md:h-52 bg-gray-100 overflow-hidden">
-                        ${item.image ? `<img src="${item.image}" loading="lazy" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" crossorigin="anonymous">` : `<div class="p-8 text-gray-300 font-bold flex items-center h-full">MCORE ${type === 'tech' ? 'TECH' : 'NEWS'}</div>`}
+                        ${visualContent}
                     </div>
                     <div class="p-6 md:p-8 flex-1 flex flex-col">
                         <span class="text-[10px] font-bold text-gray-400 mb-3 tracking-widest uppercase">${item.date || 'RECENT'}</span>
-                        <h4 class="text-lg font-semibold leading-tight group-hover:text-blue-600 transition mb-3">${item.title}</h4>
+                        <h4 class="text-lg font-semibold leading-tight group-hover:text-blue-600 transition mb-3 line-clamp-2">${item.title}</h4>
                         <p class="text-gray-400 text-xs line-clamp-2 leading-relaxed">${item.summary || ""}</p>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function openModal(type, i) {
