@@ -35,8 +35,10 @@
         .slider-ctrl svg { width: 20px; height: 20px; stroke-width: 2.5px; }
 
         /* 新闻卡片 */
-        .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: 0.3s; height: 100%; display: flex; flex-direction: column; cursor: pointer; }
+        .news-card { background: white; border: 1px solid #eee; padding: 0; transition: 0.3s; height: 100%; display: flex; flex-direction: column; cursor: pointer; overflow: hidden; }
         .news-card:hover { border-color: var(--mcore-blue); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .news-image-wrapper { width: 100%; height: 160px; background: #f0f0f0; overflow: hidden; }
+        .news-content-padding { padding: 20px; flex: 1; display: flex; flex-direction: column; }
         
         .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -54,9 +56,12 @@
 
     <div id="newsModal">
         <div class="max-w-3xl mx-auto px-6 py-20">
-            <button onclick="closeModal()" class="fixed top-10 right-10 group flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
+            <button onclick="closeModal()" class="fixed top-10 right-10 z-50 group flex items-center gap-2 text-xs font-bold tracking-widest uppercase bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm">
                 <span class="group-hover:rotate-90 transition-transform duration-300">✕</span> Close
             </button>
+            <div id="modalHeroImage" class="w-full h-64 bg-gray-100 rounded-2xl mb-10 overflow-hidden hidden">
+                <img src="" class="w-full h-full object-cover">
+            </div>
             <div id="modalDate" class="text-blue-600 font-mono text-sm mb-4"></div>
             <h2 id="modalTitle" class="text-4xl font-bold mb-10 leading-tight"></h2>
             <div id="modalContent" class="text-gray-600 leading-loose text-lg space-y-6"></div>
@@ -81,14 +86,14 @@
 
         <div class="slide active">
             <div class="media-container absolute inset-0 bg-black"></div>
-            <div class="relative z-20 text-white">
+            <div class="relative z-20 text-white p-6">
                 <h1 id="title_0" class="text-5xl font-bold mb-4">纯粹 · 高效</h1>
                 <p id="sub_0" class="text-lg tracking-[0.3em] font-light">重新定义 PC 端资产清理逻辑</p>
             </div>
         </div>
         <div class="slide">
             <div class="media-container absolute inset-0 bg-black"></div>
-            <div class="relative z-20 text-white">
+            <div class="relative z-20 text-white p-6">
                 <h1 id="title_1" class="text-5xl font-bold mb-4">毫秒级比对</h1>
                 <p id="sub_1" class="text-lg tracking-[0.3em] font-light">智能视觉算法识别重复图像</p>
             </div>
@@ -110,7 +115,7 @@
                         <p class="text-[10px] text-gray-400 font-bold mt-2 uppercase">Accuracy Rate</p>
                     </div>
                 </div>
-                <a id="mainDownloadBtn" href="#" download class="inline-block bg-black text-white px-10 py-4 font-bold rounded hover:bg-blue-700 transition uppercase tracking-widest text-sm">获取 MCORE 图片查重软件</a>
+                <a id="mainDownloadBtn" href="#" onclick="handleDownloadClick()" download class="inline-block bg-black text-white px-10 py-4 font-bold rounded hover:bg-blue-700 transition uppercase tracking-widest text-sm">获取 MCORE 图片查重软件</a>
             </div>
             <div class="bg-white p-8 border border-gray-100 shadow-sm">
                 <h4 class="text-xs font-bold mb-4 uppercase tracking-widest border-b pb-4">关于 MCORE</h4>
@@ -131,9 +136,9 @@
                 <div class="h-[1px] flex-1 bg-gray-100 mx-8 mb-2"></div>
             </div>
             <div id="newsContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="news-card skeleton h-48"></div>
-                <div class="news-card skeleton h-48"></div>
-                <div class="news-card skeleton h-48"></div>
+                <div class="news-card skeleton h-64"></div>
+                <div class="news-card skeleton h-64"></div>
+                <div class="news-card skeleton h-64"></div>
             </div>
         </section>
 
@@ -167,6 +172,79 @@
         let slideIdx = 0;
         let slideTimer;
 
+        // --- 虚增下载量核心逻辑 ---
+        const DAILY_FAKE_MAX = 30000;
+        const START_TIME = 7; // 7:00
+        const DURATION_HOURS = 17; // 7:00 到 23:59 约 17 小时
+
+        function initDownloadCounter() {
+            const now = new Date();
+            const todayStr = now.toDateString();
+            
+            // 读取本地存储
+            let storedData = JSON.parse(localStorage.getItem('mcore_download_stats')) || {
+                date: todayStr,
+                baseCount: 5280, // 初始硬编码值
+                realClicks: 0
+            };
+
+            // 如果日期变更，将昨天的增长值结算到 baseCount
+            if (storedData.date !== todayStr) {
+                // 模拟结算：如果昨天在增长时段，补全昨天的增长量
+                storedData.baseCount += DAILY_FAKE_MAX; 
+                storedData.date = todayStr;
+                storedData.realClicks = 0;
+                localStorage.setItem('mcore_download_stats', JSON.stringify(storedData));
+            }
+
+            updateDownloadUI();
+            startFakeIncrement();
+        }
+
+        function calculateCurrentDownloads() {
+            const data = JSON.parse(localStorage.getItem('mcore_download_stats'));
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            const currentSec = now.getSeconds();
+
+            let fakeIncrement = 0;
+
+            // 如果当前时间在 7:00 之后
+            if (currentHour >= START_TIME) {
+                const secondsSinceStart = ((currentHour - START_TIME) * 3600) + (currentMin * 60) + currentSec;
+                const totalActiveSeconds = DURATION_HOURS * 3600;
+                
+                // 按比例计算当前的虚增额度 (最高30000)
+                const ratio = Math.min(secondsSinceStart / totalActiveSeconds, 1);
+                fakeIncrement = Math.floor(ratio * DAILY_FAKE_MAX);
+            }
+
+            return data.baseCount + fakeIncrement + data.realClicks;
+        }
+
+        function updateDownloadUI() {
+            const count = calculateCurrentDownloads();
+            document.getElementById('downloadCount').innerText = count.toLocaleString();
+        }
+
+        function startFakeIncrement() {
+            // 3-8 秒不均等增加
+            const nextTick = Math.floor(Math.random() * (8000 - 3000 + 1)) + 3000;
+            setTimeout(() => {
+                updateDownloadUI();
+                startFakeIncrement();
+            }, nextTick);
+        }
+
+        function handleDownloadClick() {
+            let data = JSON.parse(localStorage.getItem('mcore_download_stats'));
+            data.realClicks += 1;
+            localStorage.setItem('mcore_download_stats', JSON.stringify(data));
+            updateDownloadUI();
+        }
+        // -----------------------
+
         async function loadConfig() {
             try {
                 const res = await fetch(`${CONFIG_URL}?t=${Date.now()}`);
@@ -175,15 +253,15 @@
 
                 if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
                 if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
-                updateMedia(document.querySelector('#heroSlider .slide:nth-child(3) .media-container'), ads.carousel_a_media);
+                updateMedia(document.querySelector('#heroSlider .slide:nth-child(3) .media-container'), ads.carousel_a_image || ads.carousel_a_media);
 
                 if(ads.carousel_b_title) document.getElementById('title_1').innerText = ads.carousel_b_title;
                 if(ads.carousel_b_subtitle) document.getElementById('sub_1').innerText = ads.carousel_b_subtitle;
-                updateMedia(document.querySelector('#heroSlider .slide:nth-child(4) .media-container'), ads.carousel_b_media);
+                updateMedia(document.querySelector('#heroSlider .slide:nth-child(4) .media-container'), ads.carousel_b_image || ads.carousel_b_media);
 
                 if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
                 if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
-                updateMedia(document.getElementById('footerMedia'), ads.footer_ad_media);
+                updateMedia(document.getElementById('footerMedia'), ads.footer_ad_image || ads.footer_ad_media);
 
                 const container = document.getElementById('newsContainer');
                 globalNewsData = ads.news || [];
@@ -191,13 +269,17 @@
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
+                        const coverImg = item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-gray-300 uppercase text-[9px] font-bold">Mcore News</div>`;
                         container.innerHTML += `
                             <article class="news-card" onclick="openModal(${index})">
-                                <span class="text-[9px] font-bold text-blue-600 uppercase">${item.date}</span>
-                                <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
-                                <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-3">${item.summary}</p>
-                                <div class="text-[10px] font-black uppercase tracking-widest mt-auto text-black group hover:text-blue-600 transition">
-                                    Read More <span class="inline-block transform group-hover:translate-x-1 transition-transform">+</span>
+                                <div class="news-image-wrapper">${coverImg}</div>
+                                <div class="news-content-padding">
+                                    <span class="text-[9px] font-bold text-blue-600 uppercase">${item.date}</span>
+                                    <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2">${item.title}</h4>
+                                    <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-2">${item.summary || ""}</p>
+                                    <div class="text-[10px] font-black uppercase tracking-widest mt-auto text-black group hover:text-blue-600 transition">
+                                        Read More <span class="inline-block transform group-hover:translate-x-1 transition-transform">+</span>
+                                    </div>
                                 </div>
                             </article>
                         `;
@@ -215,9 +297,16 @@
         function openModal(index) {
             const item = globalNewsData[index];
             if(!item) return;
+            const heroBox = document.getElementById('modalHeroImage');
+            if(item.image) {
+                heroBox.classList.remove('hidden');
+                heroBox.querySelector('img').src = item.image;
+            } else {
+                heroBox.classList.add('hidden');
+            }
             document.getElementById('modalTitle').innerText = item.title;
             document.getElementById('modalDate').innerText = item.date;
-            const content = item.content || item.summary;
+            const content = item.content || item.summary || "";
             document.getElementById('modalContent').innerHTML = content.split('\n').map(p => `<p>${p}</p>`).join('');
             document.getElementById('newsModal').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -239,36 +328,27 @@
             container.appendChild(el);
         }
 
-        // 轮播切换核心逻辑
         function renderSlides() {
             const slides = document.querySelectorAll('.slide');
             if(slides.length === 0) return;
-            slides.forEach((s, i) => {
-                s.classList.toggle('active', i === slideIdx);
-            });
+            slides.forEach((s, i) => { s.classList.toggle('active', i === slideIdx); });
         }
 
         function moveSlide(step) {
             const slides = document.querySelectorAll('.slide');
-            // 计算索引，处理负数情况
+            if(slides.length === 0) return;
             slideIdx = (slideIdx + step + slides.length) % slides.length;
             renderSlides();
-            resetTimer(); // 点击后重置自动播放计时
+            resetTimer();
         }
 
-        function startTimer() {
-            slideTimer = setInterval(() => moveSlide(1), 5000);
-        }
-
-        function resetTimer() {
-            clearInterval(slideTimer);
-            startTimer();
-        }
+        function startTimer() { slideTimer = setInterval(() => moveSlide(1), 5000); }
+        function resetTimer() { clearInterval(slideTimer); startTimer(); }
 
         window.onload = () => {
+            initDownloadCounter(); // 初始化下载量虚增
             loadConfig();
             startTimer();
-            
             const obs = new IntersectionObserver(ents => {
                 ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
             }, {threshold: 0.1});
