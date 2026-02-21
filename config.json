@@ -1,12 +1,18 @@
 {
   "ads": {
     "global_ad_mode": true,
-    "carousel_a_title": "全新上线新一代图片查重版本",
-    "carousel_a_subtitle": "单次扫描文件总数突破10000张",
-    "carousel_a_media": "https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771663806033_pexels-francesco-ungaro-998653.jpg",
-    "carousel_b_title": "MCORE",
-    "carousel_b_subtitle": "专业图片查重软件",
-    "carousel_b_media": "",
+    "carousel": [
+      {
+        "title": "全新上线新一代图片查重版本",
+        "subtitle": "单次扫描文件总数突破10000张",
+        "media": "https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771663806033_pexels-francesco-ungaro-998653.jpg"
+      },
+      {
+        "title": "MCORE",
+        "subtitle": "专业图片查重软件",
+        "media": ""
+      }
+    ],
     "exe_ad_url": "https://mcore.sbs/app-board",
     "exe_ad_duration": 10,
     "download_url": "https://github.com/jasonmartin201919/mcore-activator/releases",
@@ -14,14 +20,24 @@
       "client_pub_id": "",
       "client_slot_id": ""
     },
-    "news": [
+    "wenzhang": [
       {
         "date": "2026-02-21",
-        "title": "新深度技术文章",
-        "slug": "tech-insight-1771689725335",
-        "summary": "34234234 ...",
-        "content": "<p>34234234<img src=\"https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771689756599_Gemini_Generated_Image_ics67eics67eics6.png\"></p>",
-        "link": "wenzhang/tech-insight-1771689725335.html"
+        "title": "MCORE 最新图片数据查重即将上线",
+        "slug": "news-1771700840192",
+        "summary": " 测试 ...",
+        "content": "<p><img src=\"https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771700872659_996166c3dc9d42fd84868a2d2c6618c2.jpeg\"></p><p>测试</p>",
+        "link": "wenzhang/news-1771700840192.html"
+      }
+    ],
+    "jishu": [
+      {
+        "date": "2026-02-21",
+        "title": "MD5指纹比对技术",
+        "slug": "tech-1771700932799",
+        "summary": "测试测试测试  ...",
+        "content": "<p>测试测试测试</p><p><img src=\"https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771700967648______20251110222923_111_429.png\"></p>",
+        "link": "jishu/tech-1771700932799.html"
       }
     ]
   }
