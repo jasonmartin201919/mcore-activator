@@ -17,19 +17,11 @@
     "news": [
       {
         "date": "2026-02-21",
-        "title": "MCORE技术迭代",
-        "slug": "tech-insight-1771667321987",
-        "summary": "技术迭代 ...",
-        "content": "<p>技术迭代</p>",
-        "link": "wenzhang/tech-insight-1771667321987.html"
-      },
-      {
-        "date": "2026-02-21",
-        "title": "新深度技术文章",
-        "slug": "tech-insight-1771665955278",
-        "summary": "  MCORE采取新一代指纹比对技术 ...",
-        "content": "<p><img src=\"https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771665966235_pexels-francesco-ungaro-998653.jpg\"></p><p><br></p><p>MCORE采取新一代指纹比对技术</p>",
-        "link": "wenzhang/tech-insight-1771665955278.html"
+        "title": "MCORE旗下停车小程序正在灰度内测中",
+        "slug": "tech-insight-1771686149670",
+        "summary": " MCORE旗下停车小程序正在灰度测试中。 ...",
+        "content": "<p><img src=\"https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/images/1771686169791_Gemini_Generated_Image_ics67eics67eics6.png\"></p><p>MCORE旗下停车小程序正在灰度测试中。</p>",
+        "link": "wenzhang/tech-insight-1771686149670.html"
       }
     ]
   }
