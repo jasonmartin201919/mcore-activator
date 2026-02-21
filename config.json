@@ -218,7 +218,12 @@
     </footer>
 
     <script>
-        const BASE_URL = `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main`;
+        // 定义多个配置源以作为备份，优先使用 jsDelivr CDN
+        const CONFIG_URLS = [
+            `https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`,
+            `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`
+        ];
+
         let globalTechData = [];
         let globalNewsData = [];
         let slideIdx = 0;
@@ -230,14 +235,38 @@
             document.body.style.overflow = isOpen ? 'hidden' : 'auto';
         }
 
+        // 辅助函数：尝试从多个源加载配置
+        async function fetchConfig() {
+            const errors = [];
+            for (const url of CONFIG_URLS) {
+                try {
+                    console.log(`Trying to load config from: ${url}`);
+                    // 添加时间戳防止缓存
+                    const res = await fetch(`${url}?t=${Date.now()}`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const text = await res.text();
+                    // 简单验证是否为 JSON 格式，防止返回 HTML 错误页
+                    if (!text.trim().startsWith('{')) {
+                        throw new Error('Response is not valid JSON (starts with ' + text.substring(0, 10) + '...)');
+                    }
+                    
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.warn(`Failed source ${url}:`, e);
+                    errors.push(`${url}: ${e.message}`);
+                }
+            }
+            throw new Error(`All config sources failed:\n${errors.join('\n')}`);
+        }
+
         async function loadAllData() {
             try {
                 console.log("Start loading data...");
-                const res = await fetch(`${BASE_URL}/config.json?v=${new Date().setMinutes(0,0,0)}`);
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 
-                const data = await res.json();
-                console.log("Data loaded:", data);
+                // 使用新的多源加载逻辑
+                const data = await fetchConfig();
+                console.log("Data loaded successfully:", data);
                 
                 const ads = data.ads || data;
                 if (!ads) throw new Error("Invalid config data structure");
@@ -280,13 +309,20 @@
 
             } catch (e) { 
                 console.error("Data Load Failed", e);
-                const errMsg = `<div class="col-span-full text-center py-10 text-red-500 bg-red-50 rounded-xl border border-red-100">
-                    <p class="font-bold">内容加载失败</p>
-                    <p class="text-xs mt-2">${e.message}</p>
-                    <p class="text-xs mt-1 text-gray-400">请检查网络连接或联系管理员</p>
+                const errMsg = `<div class="col-span-full py-10 flex flex-col items-center justify-center text-center px-4">
+                    <div class="bg-red-50 text-red-500 rounded-xl border border-red-100 p-6 max-w-md w-full shadow-sm">
+                        <p class="font-bold text-lg mb-2">内容加载失败</p>
+                        <p class="text-xs font-mono bg-red-100 p-2 rounded text-left overflow-auto max-h-32 mb-3">${e.message}</p>
+                        <button onclick="location.reload()" class="text-xs bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">刷新页面重试</button>
+                    </div>
                 </div>`;
-                document.getElementById('techContainer').innerHTML = errMsg;
-                document.getElementById('newsSectionContainer').innerHTML = errMsg;
+                
+                // 确保元素存在再赋值
+                const techContainer = document.getElementById('techContainer');
+                if(techContainer) techContainer.innerHTML = errMsg;
+                
+                const newsContainer = document.getElementById('newsSectionContainer');
+                if(newsContainer) newsContainer.innerHTML = errMsg;
             }
         }
 
