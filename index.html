@@ -172,27 +172,16 @@
         let slideIdx = 0;
         let slideTimer;
 
-        // --- 虚增下载量核心逻辑 ---
-        const DAILY_FAKE_MAX = 30000;
-        const START_HOUR = 7; 
-        const END_HOUR = 24;
-        const TOTAL_SECONDS = (END_HOUR - START_HOUR) * 3600;
-
+        // --- 下载量自增逻辑 ---
         function initDownloadCounter() {
-            const now = new Date();
-            const todayStr = now.toDateString();
             let storedData = localStorage.getItem('mcore_download_stats');
             let data;
 
             if (!storedData) {
-                data = { date: todayStr, baseCount: 5280, realClicks: 0 };
+                // 初始基数 5280，fakeIncrement 记录自增的数值
+                data = { baseCount: 5280, realClicks: 0, fakeIncrement: 0 };
             } else {
                 data = JSON.parse(storedData);
-                if (data.date !== todayStr) {
-                    data.baseCount += DAILY_FAKE_MAX;
-                    data.date = todayStr;
-                    data.realClicks = 0;
-                }
             }
             localStorage.setItem('mcore_download_stats', JSON.stringify(data));
             updateDownloadUI();
@@ -203,17 +192,8 @@
             const raw = localStorage.getItem('mcore_download_stats');
             if(!raw) return 5280;
             const data = JSON.parse(raw);
-            const now = new Date();
-            const h = now.getHours();
-            const m = now.getMinutes();
-            const s = now.getSeconds();
-            let fakeIncrement = 0;
-            if (h >= START_HOUR) {
-                const elapsedSeconds = ((h - START_HOUR) * 3600) + (m * 60) + s;
-                const ratio = Math.min(elapsedSeconds / TOTAL_SECONDS, 1);
-                fakeIncrement = Math.floor(ratio * DAILY_FAKE_MAX);
-            }
-            return data.baseCount + fakeIncrement + (data.realClicks || 0);
+            // 总数 = 初始基数 + 累积的虚增值 + 实际点击数
+            return data.baseCount + (data.fakeIncrement || 0) + (data.realClicks || 0);
         }
 
         function updateDownloadUI() {
@@ -223,9 +203,16 @@
         }
 
         function startFakeIncrement() {
-            const nextTick = Math.floor(Math.random() * (8000 - 3000 + 1)) + 3000;
+            // 每 3000ms (3秒) 到 20000ms (20秒) 随机触发一次
+            const nextTick = Math.floor(Math.random() * (20000 - 3000 + 1)) + 3000;
             setTimeout(() => {
-                updateDownloadUI();
+                let raw = localStorage.getItem('mcore_download_stats');
+                if(raw) {
+                    let data = JSON.parse(raw);
+                    data.fakeIncrement = (data.fakeIncrement || 0) + 1; // 每次只加 1
+                    localStorage.setItem('mcore_download_stats', JSON.stringify(data));
+                    updateDownloadUI();
+                }
                 startFakeIncrement();
             }, nextTick);
         }
@@ -258,15 +245,12 @@
                 if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 updateMedia(document.getElementById('footerMedia'), ads.footer_ad_image || ads.footer_ad_media);
 
-                // --- 新闻加载逻辑：跳转至 wenzhang/ 目录 ---
                 const container = document.getElementById('newsContainer');
                 globalNewsData = ads.news || [];
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
                         const coverImg = item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-gray-300 uppercase text-[9px] font-bold">Mcore News</div>`;
-                        
-                        // 逻辑：如果 json 中有 url 字段，则跳转到 wenzhang/文件名，否则使用旧的弹窗模式
                         const targetUrl = item.url ? `wenzhang/${item.url}` : `javascript:openModal(${index})`;
 
                         container.innerHTML += `
