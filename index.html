@@ -249,11 +249,8 @@
                 try {
                     const fetchUrl = `${url}?v=${Date.now()}`;
                     const res = await fetch(fetchUrl, { cache: "no-store" });
-                    
                     if (!res.ok) continue;
-                    
                     const text = await res.text();
-                    // 增加更宽松的 JSON 校验
                     if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
                         return JSON.parse(text);
                     }
@@ -274,15 +271,11 @@
                 data = DEFAULT_CONFIG;
             }
             
-            // 兼容处理：后台传回的可能是 { ads: { ... } } 或者是直接的 { carousel: [...] }
             const ads = data.ads || data;
             
-            // 重点修复：渲染轮播图
-            // 检查 ads.carousel 是否存在且是数组
             if (ads.carousel && Array.isArray(ads.carousel)) {
                 renderCarousel(ads.carousel);
             } else {
-                console.warn("No carousel data found in config");
                 renderCarousel(DEFAULT_CONFIG.ads.carousel);
             }
             
@@ -296,22 +289,27 @@
             renderCards('newsSectionContainer', globalNewsData, 'news');
         }
 
+        // 核心修改部分：增强字段检测
         function renderCarousel(items) {
             const container = document.getElementById('sliderContainer');
             if (!container) return;
             
-            // 这里的 item.media 对应您后台第三个输入框的值
             container.innerHTML = items.map((item, i) => {
-                const mediaUrl = item.media || item.image || ""; // 兼容不同字段名
+                // 尝试从所有可能的字段中提取 URL
+                const mediaUrl = item.media || item.image || item.img || item.src || item.url || "";
                 const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaUrl);
                 
+                // 打印调试信息，方便你在控制台看第二个项目到底拿到了什么 URL
+                console.log(`Carousel Item ${i} URL:`, mediaUrl);
+
                 return `
                 <div class="slide ${i === 0 ? 'active' : ''}">
                     <div class="slide-overlay"></div>
                     <div class="media-container absolute inset-0">
                         ${isVideo 
                             ? `<video src="${mediaUrl}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>` 
-                            : `<img src="${mediaUrl}" class="w-full h-full object-cover" onerror="this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg'">`}
+                            : `<img src="${mediaUrl}" class="w-full h-full object-cover" 
+                                onerror="if(this.src!=='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg') this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg';">`}
                     </div>
                     <div class="slide-content">
                         <h1>${(item.title || 'MCORE').replace('工业级', '专业级')}</h1>
@@ -320,7 +318,6 @@
                 </div>`;
             }).join('');
             
-            // 重置索引并启动
             slideIdx = 0;
         }
 
@@ -330,7 +327,7 @@
             if(!list || !list.length) { container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center">暂无内容</p>'; return; }
             
             container.innerHTML = list.map((item, i) => {
-                let imageSrc = item.image;
+                let imageSrc = item.image || item.img || item.src;
                 if (!imageSrc && item.content) {
                     const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
                     if (imgMatch) imageSrc = imgMatch[1];
