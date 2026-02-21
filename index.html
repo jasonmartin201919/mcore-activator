@@ -20,6 +20,20 @@
         .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 10; }
         .slide.active { opacity: 1; }
         
+        /* 轮播控制按钮 (Tesla Style) */
+        .slider-ctrl { 
+            position: absolute; top: 50%; transform: translateY(-50%); z-index: 30; 
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); 
+            color: white; width: 44px; height: 44px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.2);
+            user-select: none;
+        }
+        .slider-ctrl:hover { background: rgba(255,255,255,0.9); color: black; }
+        .slider-ctrl.prev { left: 20px; }
+        .slider-ctrl.next { right: 20px; }
+        .slider-ctrl svg { width: 20px; height: 20px; stroke-width: 2.5px; }
+
         /* 新闻卡片 */
         .news-card { background: white; border: 1px solid #eee; padding: 24px; transition: 0.3s; height: 100%; display: flex; flex-direction: column; cursor: pointer; }
         .news-card:hover { border-color: var(--mcore-blue); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
@@ -58,6 +72,13 @@
     </header>
 
     <section class="hero-slider" id="heroSlider">
+        <div class="slider-ctrl prev" onclick="moveSlide(-1)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg>
+        </div>
+        <div class="slider-ctrl next" onclick="moveSlide(1)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+        </div>
+
         <div class="slide active">
             <div class="media-container absolute inset-0 bg-black"></div>
             <div class="relative z-20 text-white">
@@ -143,6 +164,8 @@
     <script>
         const CONFIG_URL = `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`;
         let globalNewsData = [];
+        let slideIdx = 0;
+        let slideTimer;
 
         async function loadConfig() {
             try {
@@ -150,21 +173,18 @@
                 const data = await res.json();
                 const ads = data.ads || data;
 
-                // 1. 轮播更新
                 if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
                 if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
-                updateMedia(document.querySelector('#heroSlider .slide:nth-child(1) .media-container'), ads.carousel_a_media);
+                updateMedia(document.querySelector('#heroSlider .slide:nth-child(3) .media-container'), ads.carousel_a_media);
 
                 if(ads.carousel_b_title) document.getElementById('title_1').innerText = ads.carousel_b_title;
                 if(ads.carousel_b_subtitle) document.getElementById('sub_1').innerText = ads.carousel_b_subtitle;
-                updateMedia(document.querySelector('#heroSlider .slide:nth-child(2) .media-container'), ads.carousel_b_media);
+                updateMedia(document.querySelector('#heroSlider .slide:nth-child(4) .media-container'), ads.carousel_b_media);
 
-                // 2. 广告与链接
                 if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
                 if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 updateMedia(document.getElementById('footerMedia'), ads.footer_ad_media);
 
-                // 3. 新闻渲染 (支持单页详情)
                 const container = document.getElementById('newsContainer');
                 globalNewsData = ads.news || [];
                 
@@ -192,23 +212,17 @@
             }
         }
 
-        // 打开模态框
         function openModal(index) {
             const item = globalNewsData[index];
             if(!item) return;
-
             document.getElementById('modalTitle').innerText = item.title;
             document.getElementById('modalDate').innerText = item.date;
-            
-            // 如果 content 存在则用 content，否则用 summary，支持 \n 换行
             const content = item.content || item.summary;
             document.getElementById('modalContent').innerHTML = content.split('\n').map(p => `<p>${p}</p>`).join('');
-            
             document.getElementById('newsModal').classList.add('active');
-            document.body.style.overflow = 'hidden'; // 禁止背景滚动
+            document.body.style.overflow = 'hidden';
         }
 
-        // 关闭模态框
         function closeModal() {
             document.getElementById('newsModal').classList.remove('active');
             document.body.style.overflow = 'auto';
@@ -225,18 +239,35 @@
             container.appendChild(el);
         }
 
-        let slideIdx = 0;
-        function rotateSlides() {
+        // 轮播切换核心逻辑
+        function renderSlides() {
             const slides = document.querySelectorAll('.slide');
             if(slides.length === 0) return;
-            slides.forEach(s => s.classList.remove('active'));
-            slideIdx = (slideIdx + 1) % slides.length;
-            slides[slideIdx].classList.add('active');
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === slideIdx);
+            });
+        }
+
+        function moveSlide(step) {
+            const slides = document.querySelectorAll('.slide');
+            // 计算索引，处理负数情况
+            slideIdx = (slideIdx + step + slides.length) % slides.length;
+            renderSlides();
+            resetTimer(); // 点击后重置自动播放计时
+        }
+
+        function startTimer() {
+            slideTimer = setInterval(() => moveSlide(1), 5000);
+        }
+
+        function resetTimer() {
+            clearInterval(slideTimer);
+            startTimer();
         }
 
         window.onload = () => {
             loadConfig();
-            setInterval(rotateSlides, 5000);
+            startTimer();
             
             const obs = new IntersectionObserver(ents => {
                 ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
@@ -244,9 +275,10 @@
             document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         };
 
-        // 按 ESC 键关闭详情
         window.addEventListener('keydown', (e) => {
             if (e.key === "Escape") closeModal();
+            if (e.key === "ArrowLeft") moveSlide(-1);
+            if (e.key === "ArrowRight") moveSlide(1);
         });
     </script>
 </body>
