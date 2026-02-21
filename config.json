@@ -17,6 +17,14 @@
     "news": [
       {
         "date": "2026-02-21",
+        "title": "MCORE技术迭代",
+        "slug": "tech-insight-1771667321987",
+        "summary": "技术迭代 ...",
+        "content": "<p>技术迭代</p>",
+        "link": "wenzhang/tech-insight-1771667321987.html"
+      },
+      {
+        "date": "2026-02-21",
         "title": "新深度技术文章",
         "slug": "tech-insight-1771665955278",
         "summary": "  MCORE采取新一代指纹比对技术 ...",
