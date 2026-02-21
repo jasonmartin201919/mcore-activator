@@ -217,7 +217,6 @@
     </footer>
 
     <script>
-        // 更新了配置源，添加了 CDN 和 Raw 直连
         const CONFIG_URLS = [
             `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`,
             `https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`
@@ -229,12 +228,8 @@
                     { title: "专业级图像去重", subtitle: "精准识别 · 稳定性能 · 本地安全", media: "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?auto=compress&cs=tinysrgb&w=1920" },
                     { title: "智能特征引擎", subtitle: "毫秒级特征提取，重塑个人数据管理逻辑", media: "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1920" }
                 ],
-                jishu: [
-                    { date: "2024-03-01", title: "数据加载中", summary: "正在尝试从远程服务器获取最新配置...", content: "请稍候...", image: "" }
-                ],
-                wenzhang: [
-                    { date: "2024-03-10", title: "正在连接", summary: "正在同步最新动态...", content: "正在同步...", image: "" }
-                ],
+                jishu: [],
+                wenzhang: [],
                 download_url: "#"
             }
         };
@@ -249,22 +244,18 @@
             document.body.style.overflow = isOpen ? 'hidden' : 'auto';
         }
 
-        // 核心修复：更鲁棒的 JSON 获取逻辑
         async function fetchConfig() {
             for (const url of CONFIG_URLS) {
                 try {
-                    // 强制增加时间戳后缀以跳过 GitHub/浏览器缓存
                     const fetchUrl = `${url}?v=${Date.now()}`;
                     const res = await fetch(fetchUrl, { cache: "no-store" });
                     
                     if (!res.ok) continue;
                     
                     const text = await res.text();
-                    // 严格校验是否为 JSON 格式，避免解析 HTML 报错
-                    if (text.trim().startsWith('{')) {
+                    // 增加更宽松的 JSON 校验
+                    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
                         return JSON.parse(text);
-                    } else {
-                        console.warn(`URL ${url} returned non-JSON content. Possible 404 page.`);
                     }
                 } catch (e) { 
                     console.warn(`Fetch source failed: ${url}`, e); 
@@ -277,52 +268,67 @@
             let data;
             try {
                 data = await fetchConfig();
-                console.log("Successfully loaded config:", data);
+                console.log("Loaded Config:", data);
             } catch (err) {
                 console.error("Using backup default config.");
                 data = DEFAULT_CONFIG;
             }
             
-            // 适配不同的 JSON 结构层级
+            // 兼容处理：后台传回的可能是 { ads: { ... } } 或者是直接的 { carousel: [...] }
             const ads = data.ads || data;
             
-            // 渲染轮播图
-            renderCarousel(ads.carousel || []);
+            // 重点修复：渲染轮播图
+            // 检查 ads.carousel 是否存在且是数组
+            if (ads.carousel && Array.isArray(ads.carousel)) {
+                renderCarousel(ads.carousel);
+            } else {
+                console.warn("No carousel data found in config");
+                renderCarousel(DEFAULT_CONFIG.ads.carousel);
+            }
             
-            // 更新下载地址
             const dlBtn = document.getElementById('mainDownloadBtn');
             if (ads.download_url && dlBtn) dlBtn.href = ads.download_url;
 
-            // 渲染技术探讨卡片
             globalTechData = ads.jishu || [];
             renderCards('techContainer', globalTechData, 'tech');
 
-            // 渲染新闻动态卡片
             globalNewsData = ads.wenzhang || [];
             renderCards('newsSectionContainer', globalNewsData, 'news');
         }
 
         function renderCarousel(items) {
             const container = document.getElementById('sliderContainer');
-            if (!container || !items.length) return;
-            container.innerHTML = items.map((item, i) => `
+            if (!container) return;
+            
+            // 这里的 item.media 对应您后台第三个输入框的值
+            container.innerHTML = items.map((item, i) => {
+                const mediaUrl = item.media || item.image || ""; // 兼容不同字段名
+                const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaUrl);
+                
+                return `
                 <div class="slide ${i === 0 ? 'active' : ''}">
                     <div class="slide-overlay"></div>
                     <div class="media-container absolute inset-0">
-                        ${/\.(mp4|webm)$/i.test(item.media) 
-                            ? `<video src="${item.media}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>` 
-                            : `<img src="${item.media}" class="w-full h-full object-cover">`}
+                        ${isVideo 
+                            ? `<video src="${mediaUrl}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>` 
+                            : `<img src="${mediaUrl}" class="w-full h-full object-cover" onerror="this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg'">`}
                     </div>
                     <div class="slide-content">
-                        <h1>${(item.title || '').replace('工业级', '专业级')}</h1>
+                        <h1>${(item.title || 'MCORE').replace('工业级', '专业级')}</h1>
                         <p>${item.subtitle || ''}</p>
                     </div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
+            
+            // 重置索引并启动
+            slideIdx = 0;
         }
 
         function renderCards(containerId, list, type) {
             const container = document.getElementById(containerId);
+            if(!container) return;
             if(!list || !list.length) { container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center">暂无内容</p>'; return; }
+            
             container.innerHTML = list.map((item, i) => {
                 let imageSrc = item.image;
                 if (!imageSrc && item.content) {
