@@ -259,28 +259,51 @@
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
-                        const safeImgUrl = getSafeUrl(item.image);
-                        const coverHtml = safeImgUrl 
-                            ? `<img src="${safeImgUrl}" 
+                        // 1. 优先使用 item.image
+                        // 2. 如果没有，尝试从 item.content 中提取第一张图片
+                        let imgUrl = item.image;
+                        if (!imgUrl && item.content) {
+                            const match = item.content.match(/<img[^>]+src="([^">]+)"/);
+                            if (match) imgUrl = match[1];
+                        }
+                        
+                        const safeImgUrl = getSafeUrl(imgUrl);
+                        
+                        // 3. 构建封面 HTML
+                        // 如果有图片 -> 显示图片
+                        // 如果无图片 -> 显示纯色背景 + 标题
+                        let coverHtml = "";
+                        if (safeImgUrl) {
+                            coverHtml = `
+                                <img src="${safeImgUrl}" 
                                     alt="${item.title}" 
                                     loading="lazy" 
                                     crossorigin="anonymous" 
                                     referrerpolicy="no-referrer" 
-                                    style="width:100%; height:100%; object-fit:cover;"
-                                    onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-300 text-[9px]\'>IMAGE ERROR</div>'">` 
-                            : `<div class="w-full h-full flex items-center justify-center text-gray-300 uppercase text-[9px] font-bold">MCORE NEWS</div>`;
-                        
-                        const targetUrl = item.url ? `wenzhang/${item.url}` : `javascript:openModal(${index})`;
+                                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-[10px] font-bold uppercase p-4 text-center\'>${item.title}</div>'">
+                            `;
+                        } else {
+                            coverHtml = `
+                                <div class="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400 p-6 text-center">
+                                    <span class="text-xs font-bold uppercase tracking-widest line-clamp-3">${item.title}</span>
+                                </div>
+                            `;
+                        }
+
+                        const targetUrl = item.link ? item.link : `javascript:openModal(${index})`;
 
                         container.innerHTML += `
-                            <a href="${targetUrl}" class="news-card group">
-                                <div class="news-image-wrapper">${coverHtml}</div>
-                                <div class="news-content-padding">
-                                    <span class="text-[9px] font-bold text-blue-600 uppercase tracking-wider">${item.date}</span>
-                                    <h4 class="text-lg font-bold mt-2 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">${item.title}</h4>
-                                    <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-2">${item.summary || ""}</p>
-                                    <div class="text-[10px] font-black uppercase tracking-widest mt-auto text-black flex items-center gap-1">
-                                        Read More <span class="inline-block transform group-hover:translate-x-1 transition-transform">+</span>
+                            <a href="${targetUrl}" class="news-card group flex flex-col h-full bg-white border border-gray-100 hover:border-blue-500 transition-all duration-300 hover:shadow-lg overflow-hidden rounded-lg">
+                                <div class="news-image-wrapper h-48 overflow-hidden bg-gray-100 relative">
+                                    ${coverHtml}
+                                </div>
+                                <div class="p-6 flex flex-col flex-1">
+                                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2 block">${item.date}</span>
+                                    <h4 class="text-lg font-bold mb-3 leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">${item.title}</h4>
+                                    <p class="text-xs text-gray-500 leading-relaxed mb-4 line-clamp-3 flex-1">${item.summary || ""}</p>
+                                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-900 flex items-center gap-1 mt-auto pt-4 border-t border-gray-50">
+                                        Read Article <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
                                     </div>
                                 </div>
                             </a>
