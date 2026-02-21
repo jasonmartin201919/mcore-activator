@@ -62,7 +62,7 @@
                 <span class="group-hover:rotate-90 transition-transform duration-300">✕</span> Close
             </button>
             <div id="modalHeroImage" class="w-full h-80 bg-gray-100 rounded-2xl mb-10 overflow-hidden hidden">
-                <img src="" class="w-full h-full object-cover">
+                <img src="" class="w-full h-full object-cover" crossorigin="anonymous" referrerpolicy="no-referrer">
             </div>
             <div id="modalDate" class="text-blue-600 font-mono text-sm mb-4"></div>
             <h2 id="modalTitle" class="text-4xl font-bold mb-10 leading-tight"></h2>
@@ -231,7 +231,6 @@
                 const data = await res.json();
                 const ads = data.ads || data;
 
-                // 轮播内容更新
                 if(ads.carousel_a_title) document.getElementById('title_0').innerText = ads.carousel_a_title;
                 if(ads.carousel_a_subtitle) document.getElementById('sub_0').innerText = ads.carousel_a_subtitle;
                 updateMedia(document.querySelector('#slide_0_container .media-container'), ads.carousel_a_image || ads.carousel_a_media);
@@ -240,20 +239,28 @@
                 if(ads.carousel_b_subtitle) document.getElementById('sub_1').innerText = ads.carousel_b_subtitle;
                 updateMedia(document.querySelector('#slide_1_container .media-container'), ads.carousel_b_image || ads.carousel_b_media);
 
-                // 底部广告与下载链接
                 if(ads.footer_ad_text) document.getElementById('footerAdText').innerText = ads.footer_ad_text;
                 if(ads.download_url) document.getElementById('mainDownloadBtn').href = ads.download_url;
                 updateMedia(document.getElementById('footerMedia'), ads.footer_ad_image || ads.footer_ad_media);
 
-                // 新闻列表加载 (重点：缩略图加载逻辑)
                 const container = document.getElementById('newsContainer');
                 globalNewsData = ads.news || [];
                 if (globalNewsData.length > 0) {
                     container.innerHTML = "";
                     globalNewsData.forEach((item, index) => {
-                        // 优先使用配置中的 image 字段，若无则显示占位图
-                        const coverHtml = item.image 
-                            ? `<img src="${item.image}" alt="${item.title}" loading="lazy">` 
+                        // 【改进点】解决跟踪预防拦截：备用节点转换 + 安全加载属性
+                        let imgUrl = item.image || "";
+                        if (imgUrl.includes('cdn.jsdelivr.net')) {
+                            imgUrl = imgUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net');
+                        }
+
+                        const coverHtml = imgUrl 
+                            ? `<img src="${imgUrl}" 
+                                    alt="${item.title}" 
+                                    loading="lazy" 
+                                    crossorigin="anonymous" 
+                                    referrerpolicy="no-referrer" 
+                                    style="width:100%; height:100%; object-fit:cover;">` 
                             : `<div class="w-full h-full flex items-center justify-center text-gray-300 uppercase text-[9px] font-bold">MCORE NEWS</div>`;
                         
                         const targetUrl = item.url ? `wenzhang/${item.url}` : `javascript:openModal(${index})`;
@@ -285,8 +292,12 @@
             if(!item) return;
             const heroBox = document.getElementById('modalHeroImage');
             if(item.image) {
+                let modalImgUrl = item.image;
+                if (modalImgUrl.includes('cdn.jsdelivr.net')) {
+                    modalImgUrl = modalImgUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net');
+                }
                 heroBox.classList.remove('hidden');
-                heroBox.querySelector('img').src = item.image;
+                heroBox.querySelector('img').src = modalImgUrl;
             } else {
                 heroBox.classList.add('hidden');
             }
@@ -306,10 +317,18 @@
         function updateMedia(container, url) {
             if(!container || !url || url.length < 5) return;
             container.innerHTML = "";
-            const isVideo = /\.(mp4|webm)$/i.test(url);
+            let safeUrl = url;
+            if (safeUrl.includes('cdn.jsdelivr.net')) {
+                safeUrl = safeUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net');
+            }
+            const isVideo = /\.(mp4|webm)$/i.test(safeUrl);
             const el = isVideo ? document.createElement('video') : new Image();
-            el.src = url;
+            el.src = safeUrl;
             el.className = "w-full h-full object-cover opacity-50 transition-opacity duration-1000";
+            if(!isVideo) {
+                el.setAttribute('crossorigin', 'anonymous');
+                el.setAttribute('referrerpolicy', 'no-referrer');
+            }
             if(isVideo) { el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; }
             container.appendChild(el);
         }
