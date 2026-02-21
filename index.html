@@ -172,64 +172,77 @@
         let slideIdx = 0;
         let slideTimer;
 
-        // --- 虚增下载量核心逻辑 ---
+        // --- 虚增下载量核心逻辑 (已修复 Null 报错并增强持久化) ---
         const DAILY_FAKE_MAX = 30000;
-        const START_TIME = 7; // 7:00
-        const DURATION_HOURS = 17; // 7:00 到 23:59 约 17 小时
+        const START_HOUR = 7; 
+        const END_HOUR = 24;
+        const TOTAL_SECONDS = (END_HOUR - START_HOUR) * 3600;
 
         function initDownloadCounter() {
             const now = new Date();
             const todayStr = now.toDateString();
             
-            // 读取本地存储
-            let storedData = JSON.parse(localStorage.getItem('mcore_download_stats')) || {
-                date: todayStr,
-                baseCount: 5280, // 初始硬编码值
-                realClicks: 0
-            };
+            let storedData = localStorage.getItem('mcore_download_stats');
+            let data;
 
-            // 如果日期变更，将昨天的增长值结算到 baseCount
-            if (storedData.date !== todayStr) {
-                // 模拟结算：如果昨天在增长时段，补全昨天的增长量
-                storedData.baseCount += DAILY_FAKE_MAX; 
-                storedData.date = todayStr;
-                storedData.realClicks = 0;
-                localStorage.setItem('mcore_download_stats', JSON.stringify(storedData));
+            if (!storedData) {
+                // 首次访问：设置初始种子
+                data = {
+                    date: todayStr,
+                    baseCount: 5280, 
+                    realClicks: 0
+                };
+            } else {
+                data = JSON.parse(storedData);
+                // 跨天检查
+                if (data.date !== todayStr) {
+                    // 如果换天了，把昨天的 30000 额度正式永久加入 baseCount
+                    data.baseCount += DAILY_FAKE_MAX;
+                    data.date = todayStr;
+                    data.realClicks = 0;
+                }
             }
 
+            // 保存（确保 calculate 时不为 null）
+            localStorage.setItem('mcore_download_stats', JSON.stringify(data));
+            
+            // 立即渲染一次
             updateDownloadUI();
+            // 开始循环随机增长
             startFakeIncrement();
         }
 
         function calculateCurrentDownloads() {
-            const data = JSON.parse(localStorage.getItem('mcore_download_stats'));
+            const raw = localStorage.getItem('mcore_download_stats');
+            if(!raw) return 5280;
+            
+            const data = JSON.parse(raw);
             const now = new Date();
-            const currentHour = now.getHours();
-            const currentMin = now.getMinutes();
-            const currentSec = now.getSeconds();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
 
             let fakeIncrement = 0;
 
-            // 如果当前时间在 7:00 之后
-            if (currentHour >= START_TIME) {
-                const secondsSinceStart = ((currentHour - START_TIME) * 3600) + (currentMin * 60) + currentSec;
-                const totalActiveSeconds = DURATION_HOURS * 3600;
-                
-                // 按比例计算当前的虚增额度 (最高30000)
-                const ratio = Math.min(secondsSinceStart / totalActiveSeconds, 1);
+            // 只有在 7:00 - 23:59 之间才计算当天的平滑增长
+            if (h >= START_HOUR) {
+                const elapsedSeconds = ((h - START_HOUR) * 3600) + (m * 60) + s;
+                // 计算当前时间点应该达到的增长比例
+                const ratio = Math.min(elapsedSeconds / TOTAL_SECONDS, 1);
                 fakeIncrement = Math.floor(ratio * DAILY_FAKE_MAX);
             }
 
-            return data.baseCount + fakeIncrement + data.realClicks;
+            return data.baseCount + fakeIncrement + (data.realClicks || 0);
         }
 
         function updateDownloadUI() {
             const count = calculateCurrentDownloads();
-            document.getElementById('downloadCount').innerText = count.toLocaleString();
+            const el = document.getElementById('downloadCount');
+            if(el) el.innerText = count.toLocaleString();
         }
 
         function startFakeIncrement() {
-            // 3-8 秒不均等增加
+            // 每 3-8 秒随机间隔执行一次 UI 刷新（模拟真实动态感）
             const nextTick = Math.floor(Math.random() * (8000 - 3000 + 1)) + 3000;
             setTimeout(() => {
                 updateDownloadUI();
@@ -238,8 +251,10 @@
         }
 
         function handleDownloadClick() {
-            let data = JSON.parse(localStorage.getItem('mcore_download_stats'));
-            data.realClicks += 1;
+            let raw = localStorage.getItem('mcore_download_stats');
+            if(!raw) return;
+            let data = JSON.parse(raw);
+            data.realClicks = (data.realClicks || 0) + 1;
             localStorage.setItem('mcore_download_stats', JSON.stringify(data));
             updateDownloadUI();
         }
@@ -290,7 +305,8 @@
 
             } catch (e) {
                 console.error("加载失败:", e);
-                document.getElementById('newsContainer').innerHTML = `<p class="col-span-3 text-center text-red-400">配置加载失败，请检查网络</p>`;
+                const container = document.getElementById('newsContainer');
+                if(container) container.innerHTML = `<p class="col-span-3 text-center text-red-400">配置加载失败，请检查网络</p>`;
             }
         }
 
@@ -318,7 +334,7 @@
         }
 
         function updateMedia(container, url) {
-            if(!url || url.length < 5) return;
+            if(!container || !url || url.length < 5) return;
             container.innerHTML = "";
             const isVideo = /\.(mp4|webm)$/i.test(url);
             const el = isVideo ? document.createElement('video') : new Image();
@@ -346,7 +362,7 @@
         function resetTimer() { clearInterval(slideTimer); startTimer(); }
 
         window.onload = () => {
-            initDownloadCounter(); // 初始化下载量虚增
+            initDownloadCounter(); // 核心修复：先初始化计数器
             loadConfig();
             startTimer();
             const obs = new IntersectionObserver(ents => {
