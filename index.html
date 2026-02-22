@@ -285,6 +285,7 @@
             // 渲染下载链接
             const dlBtn = document.getElementById('mainDownloadBtn');
             if (ads.download_url && dlBtn) dlBtn.href = ads.download_url;
+            if (ads.latest_version && dlBtn) dlBtn.innerText = `获取 MCORE 最新版本 (${ads.latest_version})`;
 
             // 渲染技术探讨 (前3个)
             globalTechData = ads.jishu || [];
