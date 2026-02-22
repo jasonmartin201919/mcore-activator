@@ -31,6 +31,7 @@
             background: rgba(255,255,255,0.8);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         @media (min-width: 768px) { nav { padding: 0 48px; } }
 
@@ -93,7 +94,7 @@
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
         /* 模态框与移动导航 */
-        #newsModal { display: none; position: fixed; inset: 0; z-index: 2000; background: #fff; overflow-y: auto; padding: 40px 20px; }
+        #newsModal { display: none; position: fixed; inset: 0; z-index: 2000; background: #fff; overflow-y: auto; padding: 60px 24px; }
         #mobileNav { 
             position: fixed; top: 0; right: -100%; width: 100%; height: 100vh; 
             background: #fff; z-index: 1050; transition: 0.4s ease;
@@ -106,15 +107,17 @@
 
     <nav>
         <div class="brand-container">
-            <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/logo02.png" class="brand-logo" alt="MCORE">
+            <a href="index.html">
+                <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/logo02.png" class="brand-logo" alt="MCORE">
+            </a>
         </div>
         
         <div class="nav-links hidden md:flex">
-            <a href="#">首页</a>
-            <a href="#tech">技术探讨</a>
-            <a href="#download">下载中心</a>
-            <a href="#news">新闻动态</a>
-            <a href="#about">关于MCORE</a>
+            <a href="index.html">首页</a>
+            <a href="tech.html">技术探讨</a>
+            <a href="download.html">下载中心</a>
+            <a href="news.html">新闻动态</a>
+            <a href="about.html">关于 MCORE</a>
         </div>
 
         <div class="md:hidden" id="menuBtn" onclick="toggleMobileNav()">
@@ -123,11 +126,11 @@
     </nav>
 
     <div id="mobileNav">
-        <a href="#" onclick="toggleMobileNav()" class="text-2xl font-bold">首页</a>
-        <a href="#tech" onclick="toggleMobileNav()" class="text-2xl font-bold">技术探讨</a>
-        <a href="#download" onclick="toggleMobileNav()" class="text-2xl font-bold">下载中心</a>
-        <a href="#news" onclick="toggleMobileNav()" class="text-2xl font-bold">新闻动态</a>
-        <a href="#about" onclick="toggleMobileNav()" class="text-2xl font-bold">关于MCORE</a>
+        <a href="index.html" onclick="toggleMobileNav()" class="text-2xl font-bold">首页</a>
+        <a href="tech.html" onclick="toggleMobileNav()" class="text-2xl font-bold">技术探讨</a>
+        <a href="download.html" onclick="toggleMobileNav()" class="text-2xl font-bold">下载中心</a>
+        <a href="news.html" onclick="toggleMobileNav()" class="text-2xl font-bold">新闻动态</a>
+        <a href="about.html" onclick="toggleMobileNav()" class="text-2xl font-bold">关于 MCORE</a>
     </div>
 
     <section class="hero-slider" id="home">
@@ -136,7 +139,7 @@
         <div id="sliderContainer"></div>
     </section>
 
-    <section id="tech" class="max-w-7xl mx-auto px-6 py-24 md:py-32">
+    <section id="tech-home" class="max-w-7xl mx-auto px-6 py-24 md:py-32">
         <div class="flex flex-col items-center mb-16 reveal">
             <h2 class="text-3xl font-semibold mb-4">技术探讨</h2>
             <div class="h-1 w-12 bg-gray-200 mb-6"></div>
@@ -147,9 +150,12 @@
             <div class="h-80 bg-gray-50 rounded-3xl animate-pulse"></div>
             <div class="h-80 bg-gray-50 rounded-3xl animate-pulse"></div>
         </div>
+        <div class="text-center mt-12">
+            <a href="tech.html" class="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:opacity-50 transition">查看全部技术文章 →</a>
+        </div>
     </section>
 
-    <section id="download" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32">
+    <section id="download-home" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32">
         <div class="download-container reveal">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
                 <div class="text-center md:text-left space-y-6">
@@ -166,7 +172,7 @@
                 <div class="flex flex-col items-center md:items-end">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center w-full max-w-[280px]">
                         <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/qrcode.png" loading="lazy" class="w-32 h-32 mb-4" alt="QR">
-                        <span class="text-sm font-bold">微信公众号：MCORE 科技</span>
+                        <span class="text-sm font-bold">微信公众号：即将上线</span>
                         <p class="text-[11px] text-gray-400 mt-2 text-center">扫码关注获取最新激活码<br>及图像管理小贴士</p>
                     </div>
                 </div>
@@ -174,20 +180,24 @@
         </div>
     </section>
 
-    <section id="news" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32">
+    <section id="news-home" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32">
         <div class="flex flex-col items-center mb-16 reveal">
             <h2 class="text-3xl font-semibold mb-4">新闻动态</h2>
             <div class="h-1 w-12 bg-gray-200 mb-6"></div>
         </div>
         <div id="newsSectionContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+        <div class="text-center mt-12">
+            <a href="news.html" class="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:opacity-50 transition">进入新闻中心 →</a>
+        </div>
     </section>
 
-    <section id="about" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32 reveal">
+    <section id="about-home" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32 reveal">
         <div class="bg-black text-white rounded-[40px] p-12 md:p-20 relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <h2 class="text-4xl font-bold mb-8">关于 MCORE</h2>
                 <p class="text-gray-400 leading-loose mb-6">MCORE 旨在为广大用户提供简洁、高效、安全的视觉资产管理体验。我们相信，优秀的工具不应增加用户的负担，而应默默守护数据的秩序。</p>
                 <p class="text-gray-400 leading-loose">通过持续优化的图像特征算法，我们致力于解决日常生活中海量图片重复、堆积的烦恼，让每一张照片都能被精准定位，让存储空间回归纯净。</p>
+                <a href="about.html" class="inline-block mt-8 text-sm font-bold border-b border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition">了解更多团队故事 →</a>
             </div>
             <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none">
                 <span class="text-[15rem] font-black italic select-none">MCORE</span>
@@ -197,7 +207,7 @@
 
     <div id="newsModal">
         <div class="max-w-3xl mx-auto">
-            <button onclick="closeModal()" class="text-sm font-bold mb-10 block opacity-50 hover:opacity-100 transition">← 返回列表</button>
+            <button onclick="closeModal()" class="text-sm font-bold mb-10 block opacity-50 hover:opacity-100 transition">← 返回首页</button>
             <h2 id="modalTitle" class="text-3xl md:text-4xl font-bold mb-6"></h2>
             <div id="modalDate" class="text-gray-400 text-xs mb-10 tracking-widest uppercase"></div>
             <div id="modalContent" class="text-gray-700 leading-loose space-y-6 text-lg"></div>
@@ -207,10 +217,10 @@
     <footer class="py-16 border-t border-gray-50">
         <div class="max-w-7xl mx-auto px-6 flex flex-col items-center">
             <div class="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-10 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                <a href="#" class="hover:text-black transition">Home</a>
-                <a href="#about" class="hover:text-black transition">About</a>
-                <a href="#" class="hover:text-black transition">Privacy</a>
-                <a href="mailto:support@mcore.sbs" class="hover:text-black transition">Contact</a>
+                <a href="index.html" class="hover:text-black transition">首页</a>
+                <a href="about.html" class="hover:text-black transition">关于我们</a>
+                <a href="legal.html" class="hover:text-black transition">隐私法律</a>
+                <a href="mailto:support@mcore.sbs" class="hover:text-black transition">联系支持</a>
             </div>
             <div class="text-[10px] text-gray-300 font-medium tracking-[0.2em]">MCORE TECHNOLOGY &copy; 2025-2026</div>
         </div>
@@ -254,77 +264,63 @@
                     if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
                         return JSON.parse(text);
                     }
-                } catch (e) { 
-                    console.warn(`Fetch source failed: ${url}`, e); 
-                }
+                } catch (e) { console.warn(e); }
             }
-            throw new Error("Could not load remote config");
+            throw new Error("Load failed");
         }
 
         async function loadAllData() {
             let data;
             try {
                 data = await fetchConfig();
-                console.log("Loaded Config:", data);
             } catch (err) {
-                console.error("Using backup default config.");
                 data = DEFAULT_CONFIG;
             }
             
             const ads = data.ads || data;
             
-            if (ads.carousel && Array.isArray(ads.carousel)) {
-                renderCarousel(ads.carousel);
-            } else {
-                renderCarousel(DEFAULT_CONFIG.ads.carousel);
-            }
+            // 渲染轮播
+            if (ads.carousel) renderCarousel(ads.carousel);
             
+            // 渲染下载链接
             const dlBtn = document.getElementById('mainDownloadBtn');
             if (ads.download_url && dlBtn) dlBtn.href = ads.download_url;
 
+            // 渲染技术探讨 (前3个)
             globalTechData = ads.jishu || [];
-            renderCards('techContainer', globalTechData, 'tech');
+            renderCards('techContainer', globalTechData.slice(0, 3), 'tech');
 
+            // 渲染新闻动态 (前3个)
             globalNewsData = ads.wenzhang || [];
-            renderCards('newsSectionContainer', globalNewsData, 'news');
+            renderCards('newsSectionContainer', globalNewsData.slice(0, 3), 'news');
         }
 
-        // 核心修改部分：增强字段检测
         function renderCarousel(items) {
             const container = document.getElementById('sliderContainer');
             if (!container) return;
-            
             container.innerHTML = items.map((item, i) => {
-                // 尝试从所有可能的字段中提取 URL
-                const mediaUrl = item.media || item.image || item.img || item.src || item.url || "";
-                const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaUrl);
-                
-                // 打印调试信息，方便你在控制台看第二个项目到底拿到了什么 URL
-                console.log(`Carousel Item ${i} URL:`, mediaUrl);
-
+                const mediaUrl = item.media || item.image || item.img || "";
+                const isVideo = /\.(mp4|webm)$/i.test(mediaUrl);
                 return `
                 <div class="slide ${i === 0 ? 'active' : ''}">
                     <div class="slide-overlay"></div>
                     <div class="media-container absolute inset-0">
                         ${isVideo 
                             ? `<video src="${mediaUrl}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>` 
-                            : `<img src="${mediaUrl}" class="w-full h-full object-cover" 
-                                onerror="if(this.src!=='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg') this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg';">`}
+                            : `<img src="${mediaUrl}" class="w-full h-full object-cover">`}
                     </div>
                     <div class="slide-content">
-                        <h1>${(item.title || 'MCORE').replace('工业级', '专业级')}</h1>
+                        <h1>${(item.title || 'MCORE').replace(/工业级/g, '专业级')}</h1>
                         <p>${item.subtitle || ''}</p>
                     </div>
                 </div>`;
             }).join('');
-            
-            slideIdx = 0;
         }
 
         function renderCards(containerId, list, type) {
             const container = document.getElementById(containerId);
             if(!container) return;
-            if(!list || !list.length) { container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center">暂无内容</p>'; return; }
+            if(!list.length) { container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center">暂无内容发布</p>'; return; }
             
             container.innerHTML = list.map((item, i) => {
                 let imageSrc = item.image || item.img || item.src;
