@@ -6,8 +6,6 @@
     <title>MCORE · 高效视觉资产管理工具</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://raw.githubusercontent.com">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -42,7 +40,6 @@
         .nav-links a:hover { background: rgba(0,0,0,0.05); }
 
         #menuBtn { cursor: pointer; padding: 8px; z-index: 1100; }
-        .brand-container { display: flex; align-items: center; }
         .brand-logo { height: 32px; width: auto; object-fit: contain; }
 
         /* 轮播样式 */
@@ -164,7 +161,7 @@
                         MCORE 始终坚持“本地处理”原则，所有比对算法均在您的机器端运行，<span class="text-black font-semibold">无需上传云端</span>。通过像素指纹验证，确保您的私人图像资产安全无忧。
                     </p>
                     <div class="pt-4">
-                        <a id="mainDownloadBtn" href="#" class="dl-button">获取 MCORE 最新版本</a>
+                        <a id="mainDownloadBtn" href="#" target="_blank" class="dl-button">获取 MCORE 最新版本</a>
                         <p class="mt-4 text-xs text-gray-400">支持 Windows 10/11 · 本地运行，隐私安全</p>
                     </div>
                 </div>
@@ -191,20 +188,6 @@
         </div>
     </section>
 
-    <section id="about-home" class="max-w-7xl mx-auto px-6 pb-24 md:pb-32 reveal">
-        <div class="bg-black text-white rounded-[40px] p-12 md:p-20 relative overflow-hidden">
-            <div class="relative z-10 max-w-2xl">
-                <h2 class="text-4xl font-bold mb-8">关于 MCORE</h2>
-                <p class="text-gray-400 leading-loose mb-6">MCORE 旨在为广大用户提供简洁、高效、安全的视觉资产管理体验。我们相信，优秀的工具不应增加用户的负担，而应默默守护数据的秩序。</p>
-                <p class="text-gray-400 leading-loose">通过持续优化的图像特征算法，我们致力于解决日常生活中海量图片重复、堆积的烦恼，让每一张照片都能被精准定位，让存储空间回归纯净。</p>
-                <a href="about.html" class="inline-block mt-8 text-sm font-bold border-b border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition">了解更多团队故事 →</a>
-            </div>
-            <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none">
-                <span class="text-[15rem] font-black italic select-none">MCORE</span>
-            </div>
-        </div>
-    </section>
-
     <div id="newsModal">
         <div class="max-w-3xl mx-auto">
             <button onclick="closeModal()" class="text-sm font-bold mb-10 block opacity-50 hover:opacity-100 transition">← 返回首页</button>
@@ -227,7 +210,9 @@
     </footer>
 
     <script>
+        // 扩展镜像源，增加 fastly 和 gcore
         const CONFIG_URLS = [
+            `https://fastly.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`,
             `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`,
             `https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`
         ];
@@ -235,6 +220,7 @@
         let globalTechData = [];
         let globalNewsData = [];
         let slideIdx = 0;
+        let slideTimer = null;
 
         function toggleMobileNav() {
             const nav = document.getElementById('mobileNav');
@@ -242,27 +228,20 @@
             document.body.style.overflow = isOpen ? 'hidden' : 'auto';
         }
 
-        // 核心加载器：确保即使网络差也能按顺序尝试数据源
         async function fetchConfig() {
             for (const url of CONFIG_URLS) {
                 try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
-
-                    const res = await fetch(`${url}?v=${Date.now()}`, { 
-                        cache: "no-store",
-                        signal: controller.signal 
+                    const res = await fetch(`${url}?t=${Date.now()}`, { 
+                        method: 'GET',
+                        cache: 'no-store'
                     });
-                    
-                    clearTimeout(timeoutId);
-                    
                     if (res.ok) {
-                        const json = await res.json();
-                        console.log("Config loaded from:", url);
-                        return json;
+                        const data = await res.json();
+                        console.log("成功加载配置来自:", url);
+                        return data;
                     }
                 } catch (e) {
-                    console.warn(`Source ${url} failed, trying next...`);
+                    console.warn("尝试源失败:", url);
                 }
             }
             return null;
@@ -270,31 +249,29 @@
 
         async function loadAllData() {
             const data = await fetchConfig();
-            
-            // 如果两个源都挂了，至少让页面不卡在骨架屏
             if (!data) {
-                document.getElementById('techContainer').innerHTML = '<p class="col-span-full text-center text-gray-400">内容加载失败，请检查网络</p>';
-                document.getElementById('newsSectionContainer').innerHTML = '<p class="col-span-full text-center text-gray-400">内容加载失败，请检查网络</p>';
+                console.error("所有数据源均不可达");
+                const containers = ['techContainer', 'newsSectionContainer', 'sliderContainer'];
+                containers.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.innerHTML = '<div class="col-span-full py-20 text-center text-gray-400">数据加载失败，请检查网络连接</div>';
+                });
                 return;
             }
 
+            // 统一数据入口，兼容 ads 包裹或直接对象
             const ads = data.ads || data;
             
             // 1. 轮播渲染
-            if (ads.carousel && ads.carousel.length > 0) {
-                renderCarousel(ads.carousel);
-                // 启动轮播切换
-                startSlideTimer();
-            } else {
-                document.getElementById('home').style.display = 'none';
+            const carouselData = ads.carousel || ads.lunbo || [];
+            if (carouselData.length > 0) {
+                renderCarousel(carouselData);
             }
-            
+
             // 2. 下载链接
+            const dlUrl = ads.download_url || ads.url || "#";
             const dlBtn = document.getElementById('mainDownloadBtn');
-            if (ads.download_url && dlBtn) {
-                dlBtn.href = ads.download_url;
-                if (ads.latest_version) dlBtn.innerText = `获取 MCORE 最新版本 (${ads.latest_version})`;
-            }
+            if (dlBtn) dlBtn.href = dlUrl;
 
             // 3. 技术探讨
             globalTechData = ads.jishu || ads.tech || [];
@@ -308,16 +285,14 @@
         function renderCarousel(items) {
             const container = document.getElementById('sliderContainer');
             if (!container) return;
+            
             container.innerHTML = items.map((item, i) => {
-                const mediaUrl = item.media || item.image || item.img || "";
-                const isVideo = /\.(mp4|webm)$/i.test(mediaUrl);
+                const img = item.media || item.image || item.img || "";
                 return `
                 <div class="slide ${i === 0 ? 'active' : ''}">
                     <div class="slide-overlay"></div>
                     <div class="media-container absolute inset-0">
-                        ${isVideo 
-                            ? `<video src="${mediaUrl}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>` 
-                            : `<img src="${mediaUrl}" class="w-full h-full object-cover" onerror="this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg'">`}
+                        <img src="${img}" class="w-full h-full object-cover" onerror="this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg'">
                     </div>
                     <div class="slide-content">
                         <h1>${(item.title || 'MCORE').replace(/工业级/g, '专业级')}</h1>
@@ -325,6 +300,10 @@
                     </div>
                 </div>`;
             }).join('');
+
+            // 重置并开启定时器
+            if(slideTimer) clearInterval(slideTimer);
+            slideTimer = setInterval(() => moveSlide(1), 5000);
         }
 
         function renderCards(containerId, list, type) {
@@ -332,25 +311,28 @@
             if(!container) return;
             
             if(!list || list.length === 0) {
-                container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center py-10">暂无内容发布</p>';
+                container.innerHTML = '<div class="col-span-full py-10 text-center text-gray-300">暂无数据</div>';
                 return;
             }
-            
+
             container.innerHTML = list.map((item, i) => {
-                let imageSrc = item.image || item.img || item.src || "";
+                let imageSrc = item.image || item.img || "";
+                // 如果没有图，尝试从内容里抓
                 if (!imageSrc && item.content) {
                     const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
                     if (imgMatch) imageSrc = imgMatch[1];
                 }
+                const displayImg = imageSrc || "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600";
+                
                 return `
                 <div onclick="openModal('${type}', ${i})" class="news-card cursor-pointer group">
                     <div class="h-48 md:h-52 bg-gray-100 overflow-hidden">
-                        ${imageSrc ? `<img src="${imageSrc}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full text-gray-300\'>NO IMAGE</div>'">` : `<div class="p-8 font-bold flex items-center justify-center h-full text-center text-gray-400">${item.title}</div>`}
+                        <img src="${displayImg}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" onerror="this.style.display='none'">
                     </div>
                     <div class="p-6 flex-1 flex flex-col">
                         <span class="text-[10px] font-bold text-gray-400 mb-2 uppercase">${item.date || 'RECENT'}</span>
                         <h4 class="text-lg font-semibold group-hover:text-blue-600 transition mb-2 line-clamp-2">${item.title}</h4>
-                        <p class="text-gray-400 text-xs line-clamp-2">${item.summary || ""}</p>
+                        <p class="text-gray-400 text-xs line-clamp-2">${item.summary || "点击查看详情"}</p>
                     </div>
                 </div>`;
             }).join('');
@@ -359,10 +341,13 @@
         function openModal(type, i) {
             const item = (type === 'tech') ? globalTechData[i] : globalNewsData[i];
             if(!item) return;
+            
             document.getElementById('modalTitle').innerText = item.title;
             document.getElementById('modalDate').innerText = item.date || "";
-            const content = (item.content || item.summary || "").replace(/工业级/g, '专业级');
+            const content = (item.content || item.summary || "");
+            // 处理换行显示
             document.getElementById('modalContent').innerHTML = content.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('');
+            
             document.getElementById('newsModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
@@ -374,21 +359,17 @@
 
         function moveSlide(step) {
             const slides = document.querySelectorAll('.slide');
-            if(slides.length <= 1) return;
+            if(slides.length < 2) return;
+            
+            slides[slideIdx].classList.remove('active');
             slideIdx = (slideIdx + step + slides.length) % slides.length;
-            slides.forEach((s, i) => s.classList.toggle('active', i === slideIdx));
-        }
-
-        let slideInterval;
-        function startSlideTimer() {
-            if (slideInterval) clearInterval(slideInterval);
-            slideInterval = setInterval(() => moveSlide(1), 7000);
+            slides[slideIdx].classList.add('active');
         }
 
         window.onload = () => {
             loadAllData();
             
-            // 元素显现动画
+            // 滚动显现动画
             const obs = new IntersectionObserver(ents => {
                 ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
             }, { threshold: 0.1 });
