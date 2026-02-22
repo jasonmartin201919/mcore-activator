@@ -34,13 +34,17 @@
         .highlight-bar {
             border-left: 2px solid #000; padding-left: 20px; margin: 40px 0;
         }
+
+        .brand-logo { height: 32px; width: auto; object-fit: contain; }
     </style>
 </head>
 <body class="bg-white">
 
     <nav class="fixed top-0 w-full h-[56px] bg-white/80 backdrop-blur-lg z-50 flex items-center justify-between px-8 md:px-12">
         <div class="flex items-center">
-            <a href="index.html" class="font-bold tracking-widest text-lg">MCORE</a>
+            <a href="index.html" class="flex items-center">
+                <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/logo02.png" class="brand-logo" alt="MCORE">
+            </a>
         </div>
         <div class="hidden md:flex gap-8">
             <a href="index.html" class="nav-link text-gray-500">首页</a>
@@ -106,9 +110,9 @@
         <footer class="mt-32 pt-8 border-t border-gray-100 flex flex-col items-center">
             <p class="text-[11px] text-gray-400 tracking-[0.2em] uppercase">MCORE TECHNOLOGY &copy; 2025-2026</p>
             <div class="flex gap-6 mt-4">
-                <a href="#" class="text-[10px] text-gray-400 hover:text-black transition">隐私</a>
-                <a href="#" class="text-[10px] text-gray-400 hover:text-black transition">法律</a>
-                <a href="#" class="text-[10px] text-gray-400 hover:text-black transition">联系</a>
+                <a href="#privacy" class="text-[10px] text-gray-400 hover:text-black transition">隐私</a>
+                <a href="#copyright" class="text-[10px] text-gray-400 hover:text-black transition">法律</a>
+                <a href="mailto:support@mcore.sbs" class="text-[10px] text-gray-400 hover:text-black transition">联系</a>
             </div>
         </footer>
     </main>
@@ -117,10 +121,16 @@
         // 平滑滚动逻辑
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const targetId = this.getAttribute('href');
+                if (targetId.startsWith('#')) {
+                    e.preventDefault();
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                }
             });
         });
     </script>
