@@ -164,8 +164,8 @@
                         MCORE 始终坚持“本地处理”原则，所有比对算法均在您的机器端运行，<span class="text-black font-semibold">无需上传云端</span>。通过像素指纹验证，确保您的私人图像资产安全无忧。
                     </p>
                     <div class="pt-4">
-                        <a id="mainDownloadBtn" href="#" download class="dl-button">获取 MCORE 最新版本 (v2.1.0)</a>
-                        <p class="mt-4 text-xs text-gray-400">支持 Windows 10/11 · 已有 <span class="text-gray-800 font-bold">23,290+</span> 用户选择</p>
+                        <a id="mainDownloadBtn" href="#" class="dl-button">获取 MCORE 最新版本</a>
+                        <p class="mt-4 text-xs text-gray-400">支持 Windows 10/11 · 本地运行，隐私安全</p>
                     </div>
                 </div>
 
@@ -173,7 +173,7 @@
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center w-full max-w-[280px]">
                         <img src="https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/assets/qrcode.png" loading="lazy" class="w-32 h-32 mb-4" alt="QR">
                         <span class="text-sm font-bold">微信公众号：即将上线</span>
-                        <p class="text-[11px] text-gray-400 mt-2 text-center">扫码关注获取最新激活码<br>及图像管理小贴士</p>
+                        <p class="text-[11px] text-gray-400 mt-2 text-center">关注获取技术支持及图像管理小贴士</p>
                     </div>
                 </div>
             </div>
@@ -220,29 +220,18 @@
                 <a href="index.html" class="hover:text-black transition">首页</a>
                 <a href="about.html" class="hover:text-black transition">关于我们</a>
                 <a href="legal.html" class="hover:text-black transition">隐私法律</a>
-                <a href="mailto:support@mcore.sbs" class="hover:text-black transition">联系支持</a>
+                <a href="mailto:mcoreservice@126.com" class="hover:text-black transition">联系支持</a>
             </div>
             <div class="text-[10px] text-gray-300 font-medium tracking-[0.2em]">MCORE TECHNOLOGY &copy; 2025-2026</div>
         </div>
     </footer>
 
     <script>
+        // 增加 JS 备用节点
         const CONFIG_URLS = [
             `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`,
             `https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`
         ];
-
-        const DEFAULT_CONFIG = {
-            ads: {
-                carousel: [
-                    { title: "专业级图像去重", subtitle: "精准识别 · 稳定性能 · 本地安全", media: "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?auto=compress&cs=tinysrgb&w=1920" },
-                    { title: "智能特征引擎", subtitle: "毫秒级特征提取，重塑个人数据管理逻辑", media: "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1920" }
-                ],
-                jishu: [],
-                wenzhang: [],
-                download_url: "#"
-            }
-        };
 
         let globalTechData = [];
         let globalNewsData = [];
@@ -257,42 +246,37 @@
         async function fetchConfig() {
             for (const url of CONFIG_URLS) {
                 try {
-                    const fetchUrl = `${url}?v=${Date.now()}`;
-                    const res = await fetch(fetchUrl, { cache: "no-store" });
+                    const res = await fetch(`${url}?v=${Date.now()}`, { cache: "no-store" });
                     if (!res.ok) continue;
-                    const text = await res.text();
-                    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
-                        return JSON.parse(text);
-                    }
-                } catch (e) { console.warn(e); }
+                    const json = await res.json();
+                    if (json) return json;
+                } catch (e) { console.warn("Fetch failed for:", url); }
             }
-            throw new Error("Load failed");
+            return null;
         }
 
         async function loadAllData() {
-            let data;
-            try {
-                data = await fetchConfig();
-            } catch (err) {
-                data = DEFAULT_CONFIG;
+            const data = await fetchConfig();
+            if (!data) {
+                console.error("All config sources failed.");
+                return;
             }
-            
+
             const ads = data.ads || data;
             
-            // 渲染轮播
+            // 1. 轮播渲染
             if (ads.carousel) renderCarousel(ads.carousel);
             
-            // 渲染下载链接
+            // 2. 下载链接
             const dlBtn = document.getElementById('mainDownloadBtn');
             if (ads.download_url && dlBtn) dlBtn.href = ads.download_url;
-            if (ads.latest_version && dlBtn) dlBtn.innerText = `获取 MCORE 最新版本 (${ads.latest_version})`;
 
-            // 渲染技术探讨 (前3个)
-            globalTechData = ads.jishu || [];
+            // 3. 技术探讨渲染 (容错路径: jishu 或 tech)
+            globalTechData = ads.jishu || ads.tech || [];
             renderCards('techContainer', globalTechData.slice(0, 3), 'tech');
 
-            // 渲染新闻动态 (前3个)
-            globalNewsData = ads.wenzhang || [];
+            // 4. 新闻动态渲染 (容错路径: wenzhang 或 news)
+            globalNewsData = ads.wenzhang || ads.news || [];
             renderCards('newsSectionContainer', globalNewsData.slice(0, 3), 'news');
         }
 
@@ -300,7 +284,7 @@
             const container = document.getElementById('sliderContainer');
             if (!container) return;
             container.innerHTML = items.map((item, i) => {
-                const mediaUrl = item.media || item.image || item.img || "";
+                const mediaUrl = item.media || item.image || "";
                 const isVideo = /\.(mp4|webm)$/i.test(mediaUrl);
                 return `
                 <div class="slide ${i === 0 ? 'active' : ''}">
@@ -321,10 +305,13 @@
         function renderCards(containerId, list, type) {
             const container = document.getElementById(containerId);
             if(!container) return;
-            if(!list.length) { container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center">暂无内容发布</p>'; return; }
+            if(!list || !list.length) { 
+                container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center py-10">暂无内容发布</p>'; 
+                return; 
+            }
             
             container.innerHTML = list.map((item, i) => {
-                let imageSrc = item.image || item.img || item.src;
+                let imageSrc = item.image || item.img || "";
                 if (!imageSrc && item.content) {
                     const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
                     if (imgMatch) imageSrc = imgMatch[1];
@@ -369,6 +356,8 @@
         window.onload = () => {
             loadAllData();
             setInterval(() => moveSlide(1), 7000);
+            
+            // 元素显现动画
             const obs = new IntersectionObserver(ents => {
                 ents.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
             }, { threshold: 0.1 });
