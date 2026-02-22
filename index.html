@@ -227,7 +227,6 @@
     </footer>
 
     <script>
-        // 增加 JS 备用节点
         const CONFIG_URLS = [
             `https://raw.githubusercontent.com/jasonmartin201919/mcore-activator/main/config.json`,
             `https://cdn.jsdelivr.net/gh/jasonmartin201919/mcore-activator@main/config.json`
@@ -243,39 +242,65 @@
             document.body.style.overflow = isOpen ? 'hidden' : 'auto';
         }
 
+        // 核心加载器：确保即使网络差也能按顺序尝试数据源
         async function fetchConfig() {
             for (const url of CONFIG_URLS) {
                 try {
-                    const res = await fetch(`${url}?v=${Date.now()}`, { cache: "no-store" });
-                    if (!res.ok) continue;
-                    const json = await res.json();
-                    if (json) return json;
-                } catch (e) { console.warn("Fetch failed for:", url); }
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+
+                    const res = await fetch(`${url}?v=${Date.now()}`, { 
+                        cache: "no-store",
+                        signal: controller.signal 
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (res.ok) {
+                        const json = await res.json();
+                        console.log("Config loaded from:", url);
+                        return json;
+                    }
+                } catch (e) {
+                    console.warn(`Source ${url} failed, trying next...`);
+                }
             }
             return null;
         }
 
         async function loadAllData() {
             const data = await fetchConfig();
+            
+            // 如果两个源都挂了，至少让页面不卡在骨架屏
             if (!data) {
-                console.error("All config sources failed.");
+                document.getElementById('techContainer').innerHTML = '<p class="col-span-full text-center text-gray-400">内容加载失败，请检查网络</p>';
+                document.getElementById('newsSectionContainer').innerHTML = '<p class="col-span-full text-center text-gray-400">内容加载失败，请检查网络</p>';
                 return;
             }
 
             const ads = data.ads || data;
             
             // 1. 轮播渲染
-            if (ads.carousel) renderCarousel(ads.carousel);
+            if (ads.carousel && ads.carousel.length > 0) {
+                renderCarousel(ads.carousel);
+                // 启动轮播切换
+                startSlideTimer();
+            } else {
+                document.getElementById('home').style.display = 'none';
+            }
             
             // 2. 下载链接
             const dlBtn = document.getElementById('mainDownloadBtn');
-            if (ads.download_url && dlBtn) dlBtn.href = ads.download_url;
+            if (ads.download_url && dlBtn) {
+                dlBtn.href = ads.download_url;
+                if (ads.latest_version) dlBtn.innerText = `获取 MCORE 最新版本 (${ads.latest_version})`;
+            }
 
-            // 3. 技术探讨渲染 (容错路径: jishu 或 tech)
+            // 3. 技术探讨
             globalTechData = ads.jishu || ads.tech || [];
             renderCards('techContainer', globalTechData.slice(0, 3), 'tech');
 
-            // 4. 新闻动态渲染 (容错路径: wenzhang 或 news)
+            // 4. 新闻动态
             globalNewsData = ads.wenzhang || ads.news || [];
             renderCards('newsSectionContainer', globalNewsData.slice(0, 3), 'news');
         }
@@ -284,7 +309,7 @@
             const container = document.getElementById('sliderContainer');
             if (!container) return;
             container.innerHTML = items.map((item, i) => {
-                const mediaUrl = item.media || item.image || "";
+                const mediaUrl = item.media || item.image || item.img || "";
                 const isVideo = /\.(mp4|webm)$/i.test(mediaUrl);
                 return `
                 <div class="slide ${i === 0 ? 'active' : ''}">
@@ -292,7 +317,7 @@
                     <div class="media-container absolute inset-0">
                         ${isVideo 
                             ? `<video src="${mediaUrl}" class="w-full h-full object-cover" autoplay loop muted playsinline></video>` 
-                            : `<img src="${mediaUrl}" class="w-full h-full object-cover">`}
+                            : `<img src="${mediaUrl}" class="w-full h-full object-cover" onerror="this.src='https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg'">`}
                     </div>
                     <div class="slide-content">
                         <h1>${(item.title || 'MCORE').replace(/工业级/g, '专业级')}</h1>
@@ -305,13 +330,14 @@
         function renderCards(containerId, list, type) {
             const container = document.getElementById(containerId);
             if(!container) return;
-            if(!list || !list.length) { 
-                container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center py-10">暂无内容发布</p>'; 
-                return; 
+            
+            if(!list || list.length === 0) {
+                container.innerHTML = '<p class="text-gray-300 text-sm col-span-full text-center py-10">暂无内容发布</p>';
+                return;
             }
             
             container.innerHTML = list.map((item, i) => {
-                let imageSrc = item.image || item.img || "";
+                let imageSrc = item.image || item.img || item.src || "";
                 if (!imageSrc && item.content) {
                     const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
                     if (imgMatch) imageSrc = imgMatch[1];
@@ -319,7 +345,7 @@
                 return `
                 <div onclick="openModal('${type}', ${i})" class="news-card cursor-pointer group">
                     <div class="h-48 md:h-52 bg-gray-100 overflow-hidden">
-                        ${imageSrc ? `<img src="${imageSrc}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105">` : `<div class="p-8 font-bold flex items-center justify-center h-full text-center text-gray-400">${item.title}</div>`}
+                        ${imageSrc ? `<img src="${imageSrc}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105" onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full text-gray-300\'>NO IMAGE</div>'">` : `<div class="p-8 font-bold flex items-center justify-center h-full text-center text-gray-400">${item.title}</div>`}
                     </div>
                     <div class="p-6 flex-1 flex flex-col">
                         <span class="text-[10px] font-bold text-gray-400 mb-2 uppercase">${item.date || 'RECENT'}</span>
@@ -348,14 +374,19 @@
 
         function moveSlide(step) {
             const slides = document.querySelectorAll('.slide');
-            if(!slides.length) return;
+            if(slides.length <= 1) return;
             slideIdx = (slideIdx + step + slides.length) % slides.length;
             slides.forEach((s, i) => s.classList.toggle('active', i === slideIdx));
         }
 
+        let slideInterval;
+        function startSlideTimer() {
+            if (slideInterval) clearInterval(slideInterval);
+            slideInterval = setInterval(() => moveSlide(1), 7000);
+        }
+
         window.onload = () => {
             loadAllData();
-            setInterval(() => moveSlide(1), 7000);
             
             // 元素显现动画
             const obs = new IntersectionObserver(ents => {
